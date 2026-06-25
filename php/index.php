@@ -108,6 +108,32 @@ header p { color:#666; font-size:14px; }
 /* ── Toast ── */
 #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e1e38; border:1px solid #ff8c8c; color:#ff8c8c; padding:10px 22px; border-radius:8px; font-size:14px; transition:transform .25s; z-index:1000; white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── Help banner ── */
+.help-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,179,71,.07); border:1px solid rgba(255,179,71,.18); border-radius:10px; padding:10px 16px; margin-bottom:20px; cursor:pointer; transition:background .2s,border-color .2s; text-decoration:none; }
+.help-banner:hover { background:rgba(255,179,71,.13); border-color:rgba(255,179,71,.35); }
+.help-banner-text { font-size:13px; color:#999; }
+.help-banner-text strong { color:#ffb347; font-weight:600; }
+.help-banner-arrow { font-size:16px; color:#666; flex-shrink:0; transition:color .2s,transform .2s; }
+.help-banner:hover .help-banner-arrow { color:#ffb347; transform:translateX(3px); }
+
+/* ── Help modal ── */
+.help-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:800; align-items:center; justify-content:center; padding:16px; }
+.help-backdrop.open { display:flex; }
+.help-modal { background:#13132b; border:1px solid #2e2e4a; border-radius:14px; padding:24px 26px; width:100%; max-width:540px; max-height:82vh; overflow-y:auto; position:relative; }
+.help-modal::-webkit-scrollbar { width:4px; }
+.help-modal::-webkit-scrollbar-thumb { background:#2e2e4a; border-radius:2px; }
+.help-title { font-size:17px; font-weight:700; color:#eee; margin-bottom:20px; }
+.help-close { position:absolute; top:14px; right:14px; width:28px; height:28px; border-radius:7px; background:transparent; border:1px solid #2e2e4a; color:#666; font-size:16px; cursor:pointer; line-height:1; transition:all .15s; }
+.help-close:hover { border-color:#ff8c8c; color:#ff8c8c; }
+.help-section { margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid #1e1e38; }
+.help-section:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
+.help-section h3 { font-size:13px; font-weight:700; color:#ffb347; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.help-section li { font-size:13px; color:#999; padding:3px 0 3px 14px; position:relative; list-style:none; line-height:1.5; }
+.help-section li::before { content:'·'; position:absolute; left:4px; color:#555; }
+.help-section li strong { color:#ccc; font-weight:600; }
+.help-kbd { display:inline-block; background:#1e1e38; border:1px solid #2e2e4a; border-radius:4px; padding:0 5px; font-size:11px; color:#aaa; font-family:monospace; line-height:1.6; }
+.help-tip { margin-top:10px; padding:8px 12px; background:rgba(255,179,71,.07); border:1px solid rgba(255,179,71,.2); border-radius:8px; font-size:12px; color:#888; }
 </style>
 </head>
 <body>
@@ -118,6 +144,12 @@ header p { color:#666; font-size:14px; }
 </header>
 
 <div class="container">
+
+    <!-- Help banner -->
+    <div id="btn-help" class="help-banner" role="button" tabindex="0">
+        <span class="help-banner-text"><strong>📖 คู่มือการใช้งาน</strong> &nbsp;·&nbsp; วิธีอัพโหลด · จัด tier · แก้ชื่อ/สี · สร้างภาพ PNG · Export/Import</span>
+        <span class="help-banner-arrow">›</span>
+    </div>
 
     <!-- Server storage notice -->
     <div class="storage-notice">
@@ -180,6 +212,71 @@ header p { color:#666; font-size:14px; }
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg">กำลังทำงาน...</p></div>
 <div id="toast"></div>
 
+<!-- Help modal -->
+<div id="help-backdrop" class="help-backdrop">
+<div class="help-modal">
+    <button id="help-close" class="help-close">×</button>
+    <div class="help-title">📖 คู่มือการใช้งาน</div>
+
+    <div class="help-section">
+        <h3>📁 อัพโหลดรูป</h3>
+        <ul>
+            <li>คลิกหรือลากไฟล์มาวางที่ช่อง upload</li>
+            <li>รองรับ JPG · PNG · GIF · WebP สูงสุด <strong>10 MB / ไฟล์</strong></li>
+            <li>อัพโหลดหลายไฟล์พร้อมกันได้</li>
+        </ul>
+        <div class="help-tip">📌 รูปที่อัพโหลดเก็บไว้บนเซิร์ฟเวอร์ — ควร Export เพื่อสำรองข้อมูลไว้กับตัวเอง</div>
+    </div>
+
+    <div class="help-section">
+        <h3>🖱️ จัดรูปลง Tier</h3>
+        <ul>
+            <li>ลากรูปจาก pool ด้านบนลงใน tier ที่ต้องการ</li>
+            <li>ลากย้ายระหว่าง tier ได้อิสระ หรือลากกลับ pool</li>
+            <li>กด <span class="help-kbd">×</span> บนรูปเพื่อลบออก</li>
+        </ul>
+    </div>
+
+    <div class="help-section">
+        <h3>✏️ จัดการ Tier</h3>
+        <ul>
+            <li><strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก</li>
+            <li><strong>คลิกพื้นหลังสี</strong> → เลือกสีจาก 8 สี</li>
+            <li>ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier นั้น</li>
+            <li>เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ</li>
+            <li>ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่ พร้อมตั้งชื่อทันที</li>
+        </ul>
+    </div>
+
+    <div class="help-section">
+        <h3>🎨 สร้างภาพ PNG</h3>
+        <ul>
+            <li>เลือก <strong>รูปต่อแถว</strong> (3–8) ให้เหมาะกับจำนวนรูปที่มี</li>
+            <li>กด "สร้างภาพ PNG" → ดาวน์โหลด <strong>oshi-tier.png</strong> ทันที</li>
+            <li>Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ</li>
+        </ul>
+    </div>
+
+    <div class="help-section">
+        <h3>📦 Export / Import</h3>
+        <ul>
+            <li><strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip</li>
+            <li><strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น</li>
+        </ul>
+        <div class="help-tip">💡 ควร Export ไว้สำรองก่อนเปลี่ยนเครื่องหรือล้างข้อมูล</div>
+    </div>
+
+    <div class="help-section">
+        <h3>💾 บันทึกอัตโนมัติ</h3>
+        <ul>
+            <li>ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ</li>
+            <li>เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม</li>
+            <li>กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่</li>
+        </ul>
+    </div>
+</div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
 (function () {
@@ -220,6 +317,16 @@ function init() {
     document.querySelectorAll('input[name="perrow"]').forEach(r => r.addEventListener('change', saveState));
     document.addEventListener('click', () => closeColorPicker());
     if (!restoreState()) tiersConfig.forEach(renderTierRow);
+
+    // Help modal
+    const helpBackdrop = document.getElementById('help-backdrop');
+    const btnHelp = document.getElementById('btn-help');
+    const openHelp = e => { e.stopPropagation(); helpBackdrop.classList.add('open'); };
+    btnHelp.addEventListener('click', openHelp);
+    btnHelp.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); helpBackdrop.classList.add('open'); } });
+    document.getElementById('help-close').addEventListener('click', () => helpBackdrop.classList.remove('open'));
+    helpBackdrop.addEventListener('click', e => { if (e.target === helpBackdrop) helpBackdrop.classList.remove('open'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') helpBackdrop.classList.remove('open'); });
 }
 
 // ── Tier management ───────────────────────────────────────────────────────────

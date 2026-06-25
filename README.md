@@ -2,7 +2,15 @@
 
 **Version 0.3.0rc1**
 
-สร้าง tier list รูปภาพแบบกำหนดเองได้ ออกมาเป็นไฟล์ PNG — มี 2 version ให้เลือกใช้
+สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
+
+### 🔒 Privacy First
+
+**Static version** (`cf/`) — รูปและข้อมูลทั้งหมดอยู่ในเบราว์เซอร์ของคุณเท่านั้น ไม่มีการส่งข้อมูลใดๆ ออกไปยัง server ภายนอก การสร้างภาพ PNG ทำในเบราว์เซอร์ทั้งหมด ไม่มี backend ไม่มี analytics ไม่มี tracking
+
+**PHP version** (`php/`) — รูปที่อัพโหลดถูกเก็บบน server ที่คุณควบคุมเองเท่านั้น ไม่ผ่านบริการภายนอก ข้อมูล tier และ layout ทั้งหมดเก็บใน browser ของผู้ใช้ผ่าน localStorage
+
+---
 
 ---
 
@@ -14,7 +22,7 @@
 | **Entry point** | `php/index.php` | `cf/index.html` |
 | **Upload storage** | Server filesystem (`uploads/`) | IndexedDB (browser) |
 | **Image generation** | Canvas API (client-side) | Canvas API (client-side) |
-| **Server required** | PHP 8.2 + GD | ไม่ต้องมี server |
+| **Server required** | PHP 8.2 | ไม่ต้องมี server |
 | **Cross-device** | ✅ ผ่าน server หรือ ZIP | ZIP เท่านั้น |
 | **Quota** | Disk space ของ server | ~50 MB ต่อ browser |
 
@@ -33,6 +41,7 @@
 - **Auto-restore** เมื่อเปิดหน้าใหม่ รวมถึงชื่อ tier, สี, และตำแหน่งรูป
 - **Export ZIP** — สำรองรูป + state ทั้งหมดเป็นไฟล์ .zip
 - **Import ZIP** — โหลดข้อมูลกลับมา (รองรับย้ายข้ามเครื่อง)
+- **คู่มือการใช้งาน in-app** — banner คลิกได้ที่ด้านบนหน้า เปิด modal อธิบายทุก feature
 
 ---
 
@@ -56,17 +65,12 @@
 ### PHP Version
 1. วางโฟลเดอร์ `oshi-tier/php/` ลงใน document root (หรือ symlink/alias ชี้มาที่โฟลเดอร์นี้)
 
-2. ตรวจสอบ GD extension
-   ```bash
-   php -r "echo extension_loaded('gd') ? 'GD OK' : 'GD missing';"
-   ```
-
-3. ตรวจสอบ permission ของ `php/uploads/`
+2. ตรวจสอบ permission ของ `php/uploads/`
    ```bash
    chmod 755 php/uploads/   # Linux/macOS
    ```
 
-4. เปิด `http://localhost/php/` (หรือตาม path ที่ตั้งค่า web server)
+3. เปิด `http://localhost/php/` (หรือตาม path ที่ตั้งค่า web server)
 
 ### Cloudflare Serverless Version
 1. deploy โฟลเดอร์ `oshi-tier/cf/` บน static hosting
@@ -185,13 +189,14 @@ oshi-tier-export.zip
 ## Changelog
 
 ### 0.3.0rc1 — 2026-06-25
-- **แยกเป็น 2 version**: PHP (`oshi-tier/`) และ Cloudflare serverless (`oshi-tier-cf/`)
+- **แยกเป็น 2 version**: PHP (`php/`) และ Static (`cf/`) ใน project เดียว
 - **ย้าย image generation จาก PHP GD → Canvas API** (client-side, ทั้งสอง version)
+- **ลบ GD dependency** ออกทั้งหมด — PHP version ต้องการแค่ PHP 8.2 + web server
 - **CF version**: IndexedDB เก็บรูปใน browser, ไม่มี server upload เลย
-- **Export/Import ZIP** (JSZip) — ย้ายข้อมูลข้ามเครื่องได้
+- **Export/Import ZIP** (JSZip) — ย้ายข้อมูลข้ามเครื่องได้, รองรับ cross-version
 - **Quota check 50 MB** พร้อม progress bar (CF version)
 - **คำเตือน storage** บอกผู้ใช้ว่ารูปอยู่ที่ไหน (server หรือ browser)
-- **CF Import**: quota check ก่อน import, ไม่ต้อง remap IDs
+- **คู่มือการใช้งาน in-app** — help banner + modal ครอบคลุมทุก feature เขียนสำหรับผู้ใช้ทั่วไป
 
 ### 0.2.0rc1 — 2026-06-25
 - เพิ่ม / ลบ tier ได้ไม่จำกัด
