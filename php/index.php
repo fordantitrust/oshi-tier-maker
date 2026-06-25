@@ -249,13 +249,23 @@ footer a:hover { color:#ffb347; }
         </div>
     </div>
 
+    <!-- Size selector -->
+    <div class="perrow-group" style="margin-top:8px;">
+        <label id="size-label"></label>
+        <div class="theme-pills">
+            <input type="radio" name="size" id="sz1" value="1" checked><label for="sz1" id="sz1-label"></label>
+            <input type="radio" name="size" id="sz2" value="2"><label for="sz2" id="sz2-label"></label>
+            <input type="radio" name="size" id="sz3" value="3"><label for="sz3" id="sz3-label"></label>
+        </div>
+    </div>
+
     <button id="btn-generate" class="btn-generate"><span>🎨</span><span id="btn-generate-text"></span></button>
 
 </div>
 
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
-<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.6.0rc1 · GitHub ↗</a></footer>
+<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.7.0rc1 · GitHub ↗</a></footer>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">
@@ -303,6 +313,10 @@ const I18N = {
     themePillNeon:     'นีออน',
     themePillPastel:   'Pastel',
     themePillMono:     'Mono',
+    sizeLabel:       'ขนาด PNG :',
+    sizePillNormal:  'Normal',
+    sizePillLarge:   'Large ×2',
+    sizePillXL:      'XL ×3',
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `ต้องการลบรูปทั้งหมด ${n} รูป?\n(ข้อมูลที่บันทึกไว้จะถูกลบด้วย)`,
     confirmDelTier:   n  => `ลบ tier นี้? รูป ${n} รูปจะกลับไปที่ pool`,
@@ -353,6 +367,10 @@ const I18N = {
     themePillNeon:     'Neon',
     themePillPastel:   'Pastel',
     themePillMono:     'Mono',
+    sizeLabel:       'Size :',
+    sizePillNormal:  'Normal',
+    sizePillLarge:   'Large ×2',
+    sizePillXL:      'XL ×3',
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `Delete all ${n} photo(s)?\n(Saved data will also be cleared)`,
     confirmDelTier:   n  => `Delete this tier? ${n} photo(s) will return to pool`,
@@ -403,6 +421,10 @@ const I18N = {
     themePillNeon:     'ネオン',
     themePillPastel:   'パステル',
     themePillMono:     'モノクロ',
+    sizeLabel:       'サイズ :',
+    sizePillNormal:  '通常',
+    sizePillLarge:   '大 ×2',
+    sizePillXL:      '特大 ×3',
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `全ての画像 ${n} 枚を削除しますか？\n(保存データも削除されます)`,
     confirmDelTier:   n  => `この Tier を削除しますか？${n} 枚の画像が pool に戻ります`,
@@ -488,6 +510,10 @@ function applyLang() {
     document.getElementById('th5-label').textContent     = t('themePillNeon');
     document.getElementById('th6-label').textContent     = t('themePillPastel');
     document.getElementById('th7-label').textContent     = t('themePillMono');
+    document.getElementById('size-label').textContent    = t('sizeLabel');
+    document.getElementById('sz1-label').textContent     = t('sizePillNormal');
+    document.getElementById('sz2-label').textContent     = t('sizePillLarge');
+    document.getElementById('sz3-label').textContent     = t('sizePillXL');
     const hc = document.getElementById('help-content');
     if (hc) hc.innerHTML = buildHelpContent();
     localStorage.setItem(LANG_KEY, currentLang);
@@ -761,6 +787,7 @@ function onClearAll() {
 // ── Generate PNG ──────────────────────────────────────────────────────────────
 async function onGenerate() {
     const theme = document.querySelector('input[name="theme"]:checked')?.value ?? 'flat';
+    const scale = parseInt(document.querySelector('input[name="size"]:checked')?.value ?? '1', 10);
     const tiers = tiersConfig.map(x => {
         const oshiIds = collectOshiIds(document.getElementById('zone-'+x.id));
         const items = oshiIds.map(id => {
@@ -774,10 +801,11 @@ async function onGenerate() {
     showOverlay(t('ovGenerating'));
     document.getElementById('btn-generate').disabled = true;
     try {
-        const canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn), theme);
+        const canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn), theme, scale);
         const blob   = await canvasToBlob(canvas);
         const fn={flat:'oshi-tier.png',dark:'oshi-tier-dark.png',polaroid:'oshi-tier-polaroid.png',gradient:'oshi-tier-gradient.png',neon:'oshi-tier-neon.png',pastel:'oshi-tier-pastel.png',mono:'oshi-tier-mono.png'};
-        dlBlob(blob, fn[theme]??'oshi-tier.png');
+        const sfx={1:'',2:'_2x',3:'_3x'}[scale]??'';
+        dlBlob(blob, (fn[theme]??'oshi-tier.png').replace('.png', sfx+'.png'));
     } catch(e) { showToast(t('toastGenFail', e.message)); }
     finally { hideOverlay(); document.getElementById('btn-generate').disabled = false; }
 }
@@ -856,13 +884,14 @@ function mimeFromExt(name) {
 }
 
 // ── Canvas generation ─────────────────────────────────────────────────────────
-async function buildTierCanvas(tiers, perRow, getSrc, theme='flat') {
+async function buildTierCanvas(tiers, perRow, getSrc, theme='flat', scale=1) {
     const {LW,PW,PH,G} = CANVAS_CFG;
     const th = n => Math.max(1,Math.ceil(n/perRow))*PH+(Math.max(1,Math.ceil(n/perRow))+1)*G;
     const W  = LW+perRow*PW+(perRow+1)*G;
     const H  = tiers.reduce((s,x)=>s+th(x.items.length),0);
-    const canvas = document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const canvas = document.createElement('canvas'); canvas.width=W*scale; canvas.height=H*scale;
     const ctx = canvas.getContext('2d');
+    if(scale!==1) ctx.scale(scale,scale);
 
     const BG={dark:'#0d0d1a',gradient:'#111111',neon:'#000000',mono:'#1a1a1a',polaroid:'#f5f0eb',pastel:'#f4f4f4'};
     if(BG[theme]){ ctx.fillStyle=BG[theme]; ctx.fillRect(0,0,W,H); }

@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.6.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
+**Version 0.7.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -405,6 +405,12 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 ---
 
 ## Changelog
+
+### 0.7.0rc1 — 2026-06-25
+- **PNG Size selector** — เลือกขนาด output ก่อน export: Normal (×1) · Large (×2) · XL (×3)
+- ใช้ `ctx.scale()` — ทุก theme ได้ขนาดที่เลือกโดยอัตโนมัติ ไม่มีโค้ดซ้ำ
+- ชื่อไฟล์ดาวน์โหลดระบุ scale: `oshi-tier_2x.png`, `oshi-tier-dark_3x.png` ฯลฯ
+- รองรับ TH/EN/JP
 
 ### 0.6.0rc1 — 2026-06-25
 - **7 Export Themes** — เลือก theme ก่อน export PNG: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
