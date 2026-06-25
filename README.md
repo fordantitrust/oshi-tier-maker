@@ -12,8 +12,6 @@
 
 ---
 
----
-
 ## Versions
 
 | | PHP Version | Cloudflare Serverless |
