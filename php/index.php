@@ -6,12 +6,18 @@
 <title>Oshi Tier Maker</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background:#0d0d1a; color:#dde; font-family:'Segoe UI','Noto Sans Thai',Tahoma,sans-serif; min-height:100vh; padding-bottom:40px; }
+body { background:#0d0d1a; color:#dde; font-family:'Segoe UI','Noto Sans Thai','Hiragino Sans',Tahoma,sans-serif; min-height:100vh; padding-bottom:40px; }
 
 /* ── Header ── */
 header { text-align:center; padding:32px 16px 20px; }
 header h1 { font-size:34px; font-weight:800; letter-spacing:-.5px; background:linear-gradient(135deg,#ff8c8c 0%,#ffb347 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:6px; }
-header p { color:#666; font-size:14px; }
+header p { color:#666; font-size:14px; margin-bottom:12px; }
+
+/* ── Language switcher ── */
+.lang-switcher { display:flex; gap:5px; justify-content:center; }
+.lang-btn { background:transparent; border:1px solid #2e2e4a; color:#555; padding:3px 11px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; letter-spacing:.5px; transition:all .15s; }
+.lang-btn:hover { border-color:#ffb347; color:#ffb347; }
+.lang-btn.active { background:#ffb347; border-color:#ffb347; color:#0d0d1a; }
 
 /* ── Layout ── */
 .container { max-width:1000px; margin:0 auto; padding:0 16px; }
@@ -110,7 +116,7 @@ header p { color:#666; font-size:14px; }
 #toast.show { transform:translateX(-50%) translateY(0); }
 
 /* ── Help banner ── */
-.help-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,179,71,.07); border:1px solid rgba(255,179,71,.18); border-radius:10px; padding:10px 16px; margin-bottom:20px; cursor:pointer; transition:background .2s,border-color .2s; text-decoration:none; }
+.help-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,179,71,.07); border:1px solid rgba(255,179,71,.18); border-radius:10px; padding:10px 16px; margin-bottom:20px; cursor:pointer; transition:background .2s,border-color .2s; }
 .help-banner:hover { background:rgba(255,179,71,.13); border-color:rgba(255,179,71,.35); }
 .help-banner-text { font-size:13px; color:#999; }
 .help-banner-text strong { color:#ffb347; font-weight:600; }
@@ -128,7 +134,7 @@ header p { color:#666; font-size:14px; }
 .help-close:hover { border-color:#ff8c8c; color:#ff8c8c; }
 .help-section { margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid #1e1e38; }
 .help-section:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
-.help-section h3 { font-size:13px; font-weight:700; color:#ffb347; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.help-section h3 { font-size:13px; font-weight:700; color:#ffb347; margin-bottom:8px; }
 .help-section li { font-size:13px; color:#999; padding:3px 0 3px 14px; position:relative; list-style:none; line-height:1.5; }
 .help-section li::before { content:'·'; position:absolute; left:4px; color:#555; }
 .help-section li strong { color:#ccc; font-weight:600; }
@@ -140,61 +146,62 @@ header p { color:#666; font-size:14px; }
 
 <header>
     <h1>✦ Oshi Tier Maker</h1>
-    <p>อัพโหลดรูป → ลากจัด tier → สร้างภาพ PNG</p>
+    <p id="h-subtitle"></p>
+    <div class="lang-switcher">
+        <button class="lang-btn" data-lang="th">TH</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="jp">JP</button>
+    </div>
 </header>
 
 <div class="container">
 
     <!-- Help banner -->
     <div id="btn-help" class="help-banner" role="button" tabindex="0">
-        <span class="help-banner-text"><strong>📖 คู่มือการใช้งาน</strong> &nbsp;·&nbsp; วิธีอัพโหลด · จัด tier · แก้ชื่อ/สี · สร้างภาพ PNG · Export/Import</span>
+        <span id="help-banner-text" class="help-banner-text"></span>
         <span class="help-banner-arrow">›</span>
     </div>
 
-    <!-- Server storage notice -->
-    <div class="storage-notice">
-        📁&nbsp; รูปที่อัพโหลดจะถูก<strong>บันทึกบนเซิร์ฟเวอร์</strong>ที่ให้บริการอยู่เท่านั้น — ใช้ <strong>Export ZIP</strong> เพื่อสำรองข้อมูลไว้กับตัวเอง
-    </div>
+    <!-- Storage notice -->
+    <div id="storage-notice" class="storage-notice"></div>
 
     <!-- Upload zone -->
     <div id="upload-zone" class="upload-zone">
         <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/gif,image/webp">
         <div class="upload-icon">🖼️</div>
-        <p class="title">คลิกหรือลากไฟล์มาวางที่นี่</p>
-        <p class="hint">JPG · PNG · GIF · WebP &nbsp;|&nbsp; สูงสุด 10 MB / ไฟล์</p>
+        <p id="upload-title" class="title"></p>
+        <p id="upload-hint" class="hint"></p>
     </div>
 
     <!-- Pool -->
     <div class="section">
         <div class="section-header">
-            <span class="section-label">รูปที่ยังไม่ได้จัด tier</span>
+            <span id="pool-label" class="section-label"></span>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <span id="save-status" class="save-status"></span>
                 <button id="btn-export" class="btn-sm">📦 Export</button>
-                <label class="btn-sm" style="cursor:pointer;">📂 Import<input type="file" id="import-input" accept=".zip" style="display:none"></label>
-                <button id="btn-clear-all" class="btn-sm">ล้างทั้งหมด</button>
+                <label class="btn-sm" style="cursor:pointer;"><span id="import-label-text"></span><input type="file" id="import-input" accept=".zip" style="display:none"></label>
+                <button id="btn-clear-all" class="btn-sm"></button>
             </div>
         </div>
-        <div id="pool" class="photo-zone">
-            <p class="empty-hint">อัพโหลดรูปก่อน แล้วลากไปวางใน tier ด้านล่าง</p>
-        </div>
+        <div id="pool" class="photo-zone"></div>
     </div>
 
     <!-- Tier list -->
     <div class="section">
         <div class="section-header">
             <span class="section-label">Tier List</span>
-            <span style="font-size:11px;color:#444;">คลิกชื่อ = แก้ไข &nbsp;|&nbsp; คลิกพื้นหลัง = เปลี่ยนสี</span>
+            <span id="tier-list-hint" style="font-size:11px;color:#444;"></span>
         </div>
         <div class="tier-container">
             <div id="tier-list"></div>
-            <button id="btn-add-tier" class="btn-add-tier">＋ เพิ่ม tier</button>
+            <button id="btn-add-tier" class="btn-add-tier"></button>
         </div>
     </div>
 
     <!-- Per-row -->
     <div class="perrow-group">
-        <label>รูปต่อแถว&nbsp;:</label>
+        <label id="perrow-label"></label>
         <div class="perrow-pills">
             <input type="radio" name="perrow" id="pr3" value="3"><label for="pr3">3</label>
             <input type="radio" name="perrow" id="pr4" value="4"><label for="pr4">4</label>
@@ -205,75 +212,18 @@ header p { color:#666; font-size:14px; }
         </div>
     </div>
 
-    <button id="btn-generate" class="btn-generate"><span>🎨</span><span>สร้างภาพ PNG</span></button>
+    <button id="btn-generate" class="btn-generate"><span>🎨</span><span id="btn-generate-text"></span></button>
 
 </div>
 
-<div id="overlay"><div class="spinner"></div><p id="overlay-msg">กำลังทำงาน...</p></div>
+<div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">
 <div class="help-modal">
     <button id="help-close" class="help-close">×</button>
-    <div class="help-title">📖 คู่มือการใช้งาน</div>
-
-    <div class="help-section">
-        <h3>📁 อัพโหลดรูป</h3>
-        <ul>
-            <li>คลิกหรือลากไฟล์มาวางที่ช่อง upload</li>
-            <li>รองรับ JPG · PNG · GIF · WebP สูงสุด <strong>10 MB / ไฟล์</strong></li>
-            <li>อัพโหลดหลายไฟล์พร้อมกันได้</li>
-        </ul>
-        <div class="help-tip">📌 รูปที่อัพโหลดเก็บไว้บนเซิร์ฟเวอร์ — ควร Export เพื่อสำรองข้อมูลไว้กับตัวเอง</div>
-    </div>
-
-    <div class="help-section">
-        <h3>🖱️ จัดรูปลง Tier</h3>
-        <ul>
-            <li>ลากรูปจาก pool ด้านบนลงใน tier ที่ต้องการ</li>
-            <li>ลากย้ายระหว่าง tier ได้อิสระ หรือลากกลับ pool</li>
-            <li>กด <span class="help-kbd">×</span> บนรูปเพื่อลบออก</li>
-        </ul>
-    </div>
-
-    <div class="help-section">
-        <h3>✏️ จัดการ Tier</h3>
-        <ul>
-            <li><strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก</li>
-            <li><strong>คลิกพื้นหลังสี</strong> → เลือกสีจาก 8 สี</li>
-            <li>ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier นั้น</li>
-            <li>เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ</li>
-            <li>ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่ พร้อมตั้งชื่อทันที</li>
-        </ul>
-    </div>
-
-    <div class="help-section">
-        <h3>🎨 สร้างภาพ PNG</h3>
-        <ul>
-            <li>เลือก <strong>รูปต่อแถว</strong> (3–8) ให้เหมาะกับจำนวนรูปที่มี</li>
-            <li>กด "สร้างภาพ PNG" → ดาวน์โหลด <strong>oshi-tier.png</strong> ทันที</li>
-            <li>Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ</li>
-        </ul>
-    </div>
-
-    <div class="help-section">
-        <h3>📦 Export / Import</h3>
-        <ul>
-            <li><strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip</li>
-            <li><strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น</li>
-        </ul>
-        <div class="help-tip">💡 ควร Export ไว้สำรองก่อนเปลี่ยนเครื่องหรือล้างข้อมูล</div>
-    </div>
-
-    <div class="help-section">
-        <h3>💾 บันทึกอัตโนมัติ</h3>
-        <ul>
-            <li>ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ</li>
-            <li>เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม</li>
-            <li>กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่</li>
-        </ul>
-    </div>
+    <div id="help-content"></div>
 </div>
 </div>
 
@@ -281,6 +231,198 @@ header p { color:#666; font-size:14px; }
 <script>
 (function () {
 'use strict';
+
+// ── i18n ──────────────────────────────────────────────────────────────────────
+const LANG_KEY = 'oshi-tier-lang';
+let currentLang = localStorage.getItem(LANG_KEY) || 'th';
+
+const I18N = {
+  th: {
+    subtitle:       'อัพโหลดรูป → ลากจัด tier → สร้างภาพ PNG',
+    helpBanner:     '<strong>📖 คู่มือการใช้งาน</strong> &nbsp;·&nbsp; วิธีอัพโหลด · จัด tier · แก้ชื่อ/สี · สร้างภาพ PNG · Export/Import',
+    storageNotice:  '📁&nbsp; รูปที่อัพโหลดจะถูก<strong>บันทึกบนเซิร์ฟเวอร์</strong>ที่ให้บริการอยู่เท่านั้น — ใช้ <strong>Export</strong> เพื่อสำรองข้อมูลไว้กับตัวเอง',
+    uploadTitle:    'คลิกหรือลากไฟล์มาวางที่นี่',
+    uploadHint:     'JPG · PNG · GIF · WebP  |  สูงสุด 10 MB / ไฟล์',
+    poolLabel:      'รูปที่ยังไม่ได้จัด Tier',
+    poolHint:       'อัพโหลดรูปก่อน แล้วลากไปวางใน tier ด้านล่าง',
+    importLabel:    '📂 Import',
+    btnClearAll:    'ล้างทั้งหมด',
+    tierListHint:   'คลิกชื่อ = แก้ไข &nbsp;|&nbsp; คลิกพื้นหลัง = เปลี่ยนสี',
+    btnAddTier:     '＋ เพิ่ม tier',
+    perRowLabel:    'รูปต่อแถว :',
+    btnGenerate:    'สร้างภาพ PNG',
+    colorHint:      '🎨 เปลี่ยนสี',
+    delTierTitle:   'ลบ tier นี้',
+    removePhotoTitle: 'ลบรูป',
+    // dynamic
+    defaultTierName:  n  => `Tier ${n}`,
+    confirmClearAll:  n  => `ต้องการลบรูปทั้งหมด ${n} รูป?\n(ข้อมูลที่บันทึกไว้จะถูกลบด้วย)`,
+    confirmDelTier:   n  => `ลบ tier นี้? รูป ${n} รูปจะกลับไปที่ pool`,
+    toastMinOneTier:  () => 'ต้องมี tier อย่างน้อย 1 tier',
+    toastNeedPhotos:  () => 'ลากรูปไปวางใน tier ก่อนนะ',
+    toastUploadFail:  e  => `อัพโหลดล้มเหลว: ${e}`,
+    toastError:       e  => `เกิดข้อผิดพลาด: ${e}`,
+    toastGenFail:     e  => `สร้างภาพไม่สำเร็จ: ${e}`,
+    toastNoExport:    () => 'ไม่มีข้อมูลสำหรับ export',
+    toastExportOk:    () => 'Export สำเร็จ',
+    toastExportFail:  e  => `Export ล้มเหลว: ${e}`,
+    toastImportOk:    () => 'Import สำเร็จ กำลัง reload...',
+    toastImportFail:  e  => `Import ล้มเหลว: ${e}`,
+    ovGenerating:     () => 'กำลังสร้างภาพ...',
+    ovExporting:      (i,n) => `กำลัง export (${i}/${n})...`,
+    ovUploading:      (i,n) => `กำลังอัพโหลด (${i}/${n})...`,
+    ovReading:        () => 'กำลังอ่านไฟล์ ZIP...',
+    errNoState:       () => 'ไม่พบ state.json ในไฟล์ ZIP',
+    errNoImages:      () => 'ไม่พบโฟลเดอร์ images ในไฟล์ ZIP',
+    savedAt:          t  => `💾 บันทึกแล้ว · ${t}`,
+    toastRestored:    (n,t) => `โหลดข้อมูลที่บันทึกไว้ · ${n} รูป · บันทึกเมื่อ ${t}`,
+  },
+  en: {
+    subtitle:       'Upload photos → Arrange tiers → Export PNG',
+    helpBanner:     '<strong>📖 User Guide</strong> &nbsp;·&nbsp; Upload · Arrange tiers · Edit name/color · Export PNG · Export/Import',
+    storageNotice:  '📁&nbsp; Uploaded photos are stored on <strong>this server only</strong> — use <strong>Export</strong> to keep a personal backup',
+    uploadTitle:    'Click or drag files here',
+    uploadHint:     'JPG · PNG · GIF · WebP  |  Max 10 MB / file',
+    poolLabel:      'Unassigned Photos',
+    poolHint:       'Upload photos first, then drag them into a tier below',
+    importLabel:    '📂 Import',
+    btnClearAll:    'Clear all',
+    tierListHint:   'Click name = edit &nbsp;|&nbsp; Click background = change color',
+    btnAddTier:     '＋ Add tier',
+    perRowLabel:    'Photos per row :',
+    btnGenerate:    'Export PNG',
+    colorHint:      '🎨 Color',
+    delTierTitle:   'Delete tier',
+    removePhotoTitle: 'Remove photo',
+    defaultTierName:  n  => `Tier ${n}`,
+    confirmClearAll:  n  => `Delete all ${n} photo(s)?\n(Saved data will also be cleared)`,
+    confirmDelTier:   n  => `Delete this tier? ${n} photo(s) will return to pool`,
+    toastMinOneTier:  () => 'At least 1 tier is required',
+    toastNeedPhotos:  () => 'Drag photos into a tier first',
+    toastUploadFail:  e  => `Upload failed: ${e}`,
+    toastError:       e  => `Error: ${e}`,
+    toastGenFail:     e  => `Export failed: ${e}`,
+    toastNoExport:    () => 'No data to export',
+    toastExportOk:    () => 'Export complete',
+    toastExportFail:  e  => `Export failed: ${e}`,
+    toastImportOk:    () => 'Import complete, reloading...',
+    toastImportFail:  e  => `Import failed: ${e}`,
+    ovGenerating:     () => 'Generating image...',
+    ovExporting:      (i,n) => `Exporting (${i}/${n})...`,
+    ovUploading:      (i,n) => `Uploading (${i}/${n})...`,
+    ovReading:        () => 'Reading ZIP file...',
+    errNoState:       () => 'state.json not found in ZIP',
+    errNoImages:      () => 'images/ folder not found in ZIP',
+    savedAt:          t  => `💾 Saved · ${t}`,
+    toastRestored:    (n,t) => `Restored ${n} photo(s) · saved at ${t}`,
+  },
+  jp: {
+    subtitle:       '画像アップロード → Tier 整理 → PNG 出力',
+    helpBanner:     '<strong>📖 使い方ガイド</strong> &nbsp;·&nbsp; アップロード · Tier 整理 · 名前/色変更 · PNG 出力 · Export/Import',
+    storageNotice:  '📁&nbsp; アップロードした画像は<strong>このサーバーのみ</strong>に保存されます — <strong>Export</strong> でバックアップを保存してください',
+    uploadTitle:    'クリックまたはファイルをドラッグ',
+    uploadHint:     'JPG · PNG · GIF · WebP  |  最大 10 MB / ファイル',
+    poolLabel:      '未配置の画像',
+    poolHint:       '画像をアップロードして、下の Tier にドラッグしてください',
+    importLabel:    '📂 インポート',
+    btnClearAll:    '全て削除',
+    tierListHint:   '名前をクリック = 編集 &nbsp;|&nbsp; 背景をクリック = 色変更',
+    btnAddTier:     '＋ Tier を追加',
+    perRowLabel:    '1行の枚数 :',
+    btnGenerate:    'PNG を出力',
+    colorHint:      '🎨 色変更',
+    delTierTitle:   'Tier を削除',
+    removePhotoTitle: '画像を削除',
+    defaultTierName:  n  => `Tier ${n}`,
+    confirmClearAll:  n  => `全ての画像 ${n} 枚を削除しますか？\n(保存データも削除されます)`,
+    confirmDelTier:   n  => `この Tier を削除しますか？${n} 枚の画像が pool に戻ります`,
+    toastMinOneTier:  () => '少なくとも 1 つの Tier が必要です',
+    toastNeedPhotos:  () => 'まず Tier に画像をドラッグしてください',
+    toastUploadFail:  e  => `アップロード失敗: ${e}`,
+    toastError:       e  => `エラー: ${e}`,
+    toastGenFail:     e  => `PNG 出力失敗: ${e}`,
+    toastNoExport:    () => 'エクスポートするデータがありません',
+    toastExportOk:    () => 'エクスポート完了',
+    toastExportFail:  e  => `エクスポート失敗: ${e}`,
+    toastImportOk:    () => 'インポート完了、リロード中...',
+    toastImportFail:  e  => `インポート失敗: ${e}`,
+    ovGenerating:     () => '画像を生成中...',
+    ovExporting:      (i,n) => `エクスポート中 (${i}/${n})...`,
+    ovUploading:      (i,n) => `アップロード中 (${i}/${n})...`,
+    ovReading:        () => 'ZIP ファイルを読み込み中...',
+    errNoState:       () => 'ZIP に state.json が見つかりません',
+    errNoImages:      () => 'ZIP に images/ フォルダが見つかりません',
+    savedAt:          t  => `💾 保存済み · ${t}`,
+    toastRestored:    (n,t) => `${n} 枚の画像を復元 · ${t} に保存`,
+  },
+};
+
+// Help modal content per language
+const HELP = {
+  th: { title: '📖 คู่มือการใช้งาน', sections: [
+    { h:'📁 อัพโหลดรูป', li:['คลิกหรือลากไฟล์มาวางที่ช่อง upload','รองรับ JPG · PNG · GIF · WebP สูงสุด <strong>10 MB / ไฟล์</strong>','อัพโหลดหลายไฟล์พร้อมกันได้'], tip:'📌 รูปที่อัพโหลดเก็บไว้บนเซิร์ฟเวอร์ — ควร Export เพื่อสำรองข้อมูลไว้กับตัวเอง' },
+    { h:'🖱️ จัดรูปลง Tier', li:['ลากรูปจาก pool ด้านบนลงใน tier ที่ต้องการ','ลากย้ายระหว่าง tier ได้อิสระ หรือลากกลับ pool','กด <span class="help-kbd">×</span> บนรูปเพื่อลบออก'] },
+    { h:'✏️ จัดการ Tier', li:['<strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก','<strong>คลิกพื้นหลังสี</strong> → เลือกสีจาก 8 สี','ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier','เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ','ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่ พร้อมตั้งชื่อทันที'] },
+    { h:'🎨 สร้างภาพ PNG', li:['เลือก <strong>รูปต่อแถว</strong> (3–8) ให้เหมาะกับจำนวนรูปที่มี','กด "สร้างภาพ PNG" → ดาวน์โหลด <strong>oshi-tier.png</strong> ทันที','Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ'] },
+    { h:'📦 Export / Import', li:['<strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip','<strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น'], tip:'💡 ควร Export ไว้สำรองก่อนเปลี่ยนเครื่องหรือล้างข้อมูล' },
+    { h:'💾 บันทึกอัตโนมัติ', li:['ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ','เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม','กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่'] },
+  ]},
+  en: { title: '📖 User Guide', sections: [
+    { h:'📁 Upload Photos', li:['Click or drag files into the upload area','Supports JPG · PNG · GIF · WebP — max <strong>10 MB / file</strong>','Multiple files can be uploaded at once'], tip:'📌 Photos are stored on the server — use Export to keep a personal backup' },
+    { h:'🖱️ Arrange Photos', li:['Drag photos from the pool above into any tier','Freely move photos between tiers or back to pool','Press <span class="help-kbd">×</span> on a photo to remove it'] },
+    { h:'✏️ Manage Tiers', li:['<strong>Click tier name</strong> → type new name → press <span class="help-kbd">Enter</span> or click away','<strong>Click color background</strong> → choose from 8 colors','<span class="help-kbd">×</span> button top-right (hover to show) → delete tier','Photos in a deleted tier return to pool automatically','<strong>＋ Add tier</strong> button → create new tier with immediate name edit'] },
+    { h:'🎨 Export PNG', li:['Choose <strong>photos per row</strong> (3–8) to match your count','Click "Export PNG" → download <strong>oshi-tier.png</strong> immediately','Empty tiers are excluded from the image'] },
+    { h:'📦 Export / Import', li:['<strong>Export</strong> → save all photos and tier layout as a .zip file','<strong>Import</strong> → restore a .zip to recover or transfer data'], tip:'💡 Export regularly before switching devices or clearing data' },
+    { h:'💾 Auto-save', li:['Every change is saved automatically','Refresh or reopen — tiers and photo positions are fully restored','Use "Clear all" to reset and start over'] },
+  ]},
+  jp: { title: '📖 使い方ガイド', sections: [
+    { h:'📁 画像アップロード', li:['クリックまたはドラッグでアップロードエリアにファイルを追加','JPG · PNG · GIF · WebP 対応 — 最大 <strong>10 MB / ファイル</strong>','複数ファイルを同時にアップロード可能'], tip:'📌 画像はサーバーに保存されます — Export でバックアップを保存してください' },
+    { h:'🖱️ Tier に配置', li:['上の pool から Tier にドラッグ','Tier 間や pool へ自由に移動可能','<span class="help-kbd">×</span> ボタンで画像を削除'] },
+    { h:'✏️ Tier を管理', li:['<strong>Tier 名をクリック</strong> → 新しい名前を入力 → <span class="help-kbd">Enter</span> またはクリックで確定','<strong>背景色をクリック</strong> → 8色から選択','右上の <span class="help-kbd">×</span>（ホバーで表示）→ Tier を削除','削除した Tier の画像は pool に戻ります','<strong>＋ Tier を追加</strong>ボタン → 新しい Tier を追加してすぐ名前を編集'] },
+    { h:'🎨 PNG 出力', li:['<strong>1行の枚数</strong>（3〜8）を選択','「PNG を出力」をクリック → <strong>oshi-tier.png</strong> をダウンロード','空の Tier は画像に含まれません'] },
+    { h:'📦 エクスポート / インポート', li:['<strong>エクスポート</strong> → 全画像と Tier 設定を .zip に保存','<strong>インポート</strong> → .zip を読み込んでデータを復元・転送'], tip:'💡 デバイス変更やデータ削除の前に定期的にエクスポートしてください' },
+    { h:'💾 自動保存', li:['全ての変更は自動的に保存されます','更新・再オープン後も Tier と画像の位置が復元されます','「全て削除」でリセットして最初からやり直せます'] },
+  ]},
+};
+
+function t(key, ...args) {
+    const val = (I18N[currentLang] ?? I18N.th)[key] ?? I18N.th[key] ?? key;
+    return typeof val === 'function' ? val(...args) : val;
+}
+
+function applyLang() {
+    document.documentElement.lang = { th:'th', en:'en', jp:'ja' }[currentLang] || 'th';
+    document.getElementById('h-subtitle').textContent        = t('subtitle');
+    document.getElementById('help-banner-text').innerHTML   = t('helpBanner');
+    document.getElementById('storage-notice').innerHTML     = t('storageNotice');
+    document.getElementById('upload-title').textContent     = t('uploadTitle');
+    document.getElementById('upload-hint').textContent      = t('uploadHint');
+    document.getElementById('pool-label').textContent       = t('poolLabel');
+    document.getElementById('import-label-text').textContent = t('importLabel');
+    document.getElementById('btn-clear-all').textContent    = t('btnClearAll');
+    document.getElementById('tier-list-hint').innerHTML     = t('tierListHint');
+    document.getElementById('btn-add-tier').textContent     = t('btnAddTier');
+    document.getElementById('perrow-label').textContent     = t('perRowLabel');
+    document.getElementById('btn-generate-text').textContent = t('btnGenerate');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+    // Re-render pool hint if visible
+    const hint = pool.querySelector('.empty-hint');
+    if (hint) hint.textContent = t('poolHint');
+    // Re-render color hints
+    document.querySelectorAll('.color-hint').forEach(el => el.textContent = t('colorHint'));
+    // Re-render help modal
+    const hc = document.getElementById('help-content');
+    if (hc) hc.innerHTML = buildHelpContent();
+    localStorage.setItem(LANG_KEY, currentLang);
+}
+
+function buildHelpContent() {
+    const h = HELP[currentLang] || HELP.th;
+    return `<div class="help-title">${h.title}</div>` +
+        h.sections.map(s =>
+            `<div class="help-section"><h3>${s.h}</h3><ul>${s.li.map(i=>`<li>${i}</li>`).join('')}</ul>${s.tip?`<div class="help-tip">${s.tip}</div>`:''}</div>`
+        ).join('');
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const STORAGE_KEY   = 'oshi-tier-v1';
@@ -304,6 +446,10 @@ const saveStatus = document.getElementById('save-status');
 init();
 
 function init() {
+    applyLang();
+    document.querySelectorAll('.lang-btn').forEach(btn =>
+        btn.addEventListener('click', () => { currentLang = btn.dataset.lang; applyLang(); })
+    );
     setupUploadZone();
     setupZoneDrop(pool);
     document.getElementById('btn-add-tier').addEventListener('click', addTier);
@@ -321,19 +467,18 @@ function init() {
     // Help modal
     const helpBackdrop = document.getElementById('help-backdrop');
     const btnHelp = document.getElementById('btn-help');
-    const openHelp = e => { e.stopPropagation(); helpBackdrop.classList.add('open'); };
-    btnHelp.addEventListener('click', openHelp);
-    btnHelp.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); helpBackdrop.classList.add('open'); } });
+    btnHelp.addEventListener('click', e => { e.stopPropagation(); helpBackdrop.classList.add('open'); });
+    btnHelp.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); helpBackdrop.classList.add('open'); } });
     document.getElementById('help-close').addEventListener('click', () => helpBackdrop.classList.remove('open'));
-    helpBackdrop.addEventListener('click', e => { if (e.target === helpBackdrop) helpBackdrop.classList.remove('open'); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') helpBackdrop.classList.remove('open'); });
+    helpBackdrop.addEventListener('click', e => { if(e.target===helpBackdrop) helpBackdrop.classList.remove('open'); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') helpBackdrop.classList.remove('open'); });
 }
 
 // ── Tier management ───────────────────────────────────────────────────────────
 function addTier() {
     const used  = new Set(tiersConfig.map(t => t.color));
     const color = PALETTE.find(c => !used.has(c)) ?? PALETTE[tiersConfig.length % PALETTE.length];
-    const tier  = { id:'tier-'+Date.now(), name:'Tier '+(tiersConfig.length+1), color };
+    const tier  = { id:'tier-'+Date.now(), name:t('defaultTierName', tiersConfig.length+1), color };
     tiersConfig.push(tier);
     const { nameSpan } = renderTierRow(tier);
     saveState();
@@ -341,12 +486,12 @@ function addTier() {
 }
 
 function deleteTier(id) {
-    if (tiersConfig.length <= 1) { showToast('ต้องมี tier อย่างน้อย 1 tier'); return; }
+    if (tiersConfig.length <= 1) { showToast(t('toastMinOneTier')); return; }
     const zone   = document.getElementById('zone-'+id);
     const photos = zone ? [...zone.querySelectorAll('.photo-item')] : [];
-    if (photos.length > 0 && !confirm(`ลบ tier นี้? รูป ${photos.length} รูปจะกลับไปที่ pool`)) return;
+    if (photos.length > 0 && !confirm(t('confirmDelTier', photos.length))) return;
     photos.forEach(p => appendPhoto(pool, p));
-    tiersConfig = tiersConfig.filter(t => t.id !== id);
+    tiersConfig = tiersConfig.filter(x => x.id !== id);
     document.querySelector(`.tier-row[data-tier-id="${id}"]`)?.remove();
     syncPoolHint();
     saveState();
@@ -357,19 +502,19 @@ function renderTierRow(tier) {
     row.className = 'tier-row'; row.dataset.tierId = tier.id;
 
     const label = document.createElement('div');
-    label.className = 'tier-label'; label.style.background = tier.color; label.title = 'คลิกพื้นหลังเพื่อเปลี่ยนสี';
-    label.addEventListener('click', e => { if (e.target === label || e.target === colorHint) showColorPicker(tier, label, e); });
+    label.className = 'tier-label'; label.style.background = tier.color; label.title = t('colorHint');
+    label.addEventListener('click', e => { if(e.target===label||e.target===colorHint) showColorPicker(tier,label,e); });
 
     const nameSpan = document.createElement('span');
-    nameSpan.className = 'tier-name'; nameSpan.textContent = tier.name; nameSpan.title = 'คลิกเพื่อแก้ไขชื่อ';
+    nameSpan.className = 'tier-name'; nameSpan.textContent = tier.name;
     nameSpan.addEventListener('click', e => { e.stopPropagation(); startInlineEdit(tier, nameSpan); });
 
     const delBtn = document.createElement('button');
-    delBtn.className = 'btn-del-tier'; delBtn.type = 'button'; delBtn.textContent = '×'; delBtn.title = 'ลบ tier นี้';
+    delBtn.className = 'btn-del-tier'; delBtn.type = 'button'; delBtn.textContent = '×'; delBtn.title = t('delTierTitle');
     delBtn.addEventListener('click', e => { e.stopPropagation(); deleteTier(tier.id); });
 
     const colorHint = document.createElement('span');
-    colorHint.className = 'color-hint'; colorHint.textContent = '🎨 เปลี่ยนสี';
+    colorHint.className = 'color-hint'; colorHint.textContent = t('colorHint');
 
     label.append(nameSpan, delBtn, colorHint);
 
@@ -398,14 +543,13 @@ function showColorPicker(tier, labelEl, ev) {
     const picker = document.createElement('div'); picker.className = 'color-picker-popup';
     PALETTE.forEach(color => {
         const sw = document.createElement('div');
-        sw.className = 'color-swatch'+(color===tier.color?' selected':''); sw.style.background=color; sw.title=color;
+        sw.className = 'color-swatch'+(color===tier.color?' selected':''); sw.style.background=color;
         sw.addEventListener('click', e => { e.stopPropagation(); tier.color=color; labelEl.style.background=color; closeColorPicker(); saveState(); });
         picker.appendChild(sw);
     });
     document.body.appendChild(picker); colorPicker = picker;
     const r = labelEl.getBoundingClientRect();
-    picker.style.top  = (r.bottom+4)+'px';
-    picker.style.left = r.left+'px';
+    picker.style.top = (r.bottom+4)+'px'; picker.style.left = r.left+'px';
 }
 function closeColorPicker() { colorPicker?.remove(); colorPicker=null; }
 
@@ -422,7 +566,7 @@ function setupUploadZone() {
     uz.addEventListener('click', () => fi.click());
     fi.addEventListener('change', e => { processFiles(e.target.files); fi.value=''; });
     uz.addEventListener('dragenter', e => e.preventDefault());
-    uz.addEventListener('dragover',  e => { e.preventDefault(); if(!draggedEl) uz.classList.add('dragover'); });
+    uz.addEventListener('dragover', e => { e.preventDefault(); if(!draggedEl) uz.classList.add('dragover'); });
     uz.addEventListener('dragleave', () => uz.classList.remove('dragover'));
     uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('dragover'); if(e.dataTransfer.files.length) processFiles(e.dataTransfer.files); });
 }
@@ -434,8 +578,8 @@ async function uploadFile(file) {
     try {
         const json = await fetch('upload.php',{method:'POST',body:fd}).then(r=>r.json());
         if (json.success) { ph.replaceWith(makePhotoEl(json.filename,'uploads/'+json.filename)); saveState(); }
-        else { ph.remove(); showToast('อัพโหลดล้มเหลว: '+json.error); }
-    } catch(e) { ph.remove(); showToast('เกิดข้อผิดพลาด: '+e.message); }
+        else { ph.remove(); showToast(t('toastUploadFail', json.error)); }
+    } catch(e) { ph.remove(); showToast(t('toastError', e.message)); }
 }
 
 // ── Element factories ─────────────────────────────────────────────────────────
@@ -446,233 +590,171 @@ function makePhotoEl(filename, src) {
     div.className='photo-item'; div.draggable=true; div.dataset.filename=filename;
     const img = document.createElement('img'); img.src=src; img.alt=''; img.draggable=false;
     img.addEventListener('error', () => { div.remove(); syncPoolHint(); saveState(); });
-    const btn = document.createElement('button'); btn.className='btn-remove'; btn.type='button'; btn.textContent='×'; btn.title='ลบรูป';
+    const btn = document.createElement('button'); btn.className='btn-remove'; btn.type='button'; btn.textContent='×'; btn.title=t('removePhotoTitle');
     btn.addEventListener('click', e => { e.stopPropagation(); div.remove(); syncPoolHint(); saveState(); });
     div.append(img, btn);
     div.addEventListener('dragstart', e => { draggedEl=div; e.dataTransfer.effectAllowed='move'; requestAnimationFrame(()=>div.style.opacity='.4'); });
-    div.addEventListener('dragend',   () => { div.style.opacity=''; draggedEl=null; });
+    div.addEventListener('dragend', () => { div.style.opacity=''; draggedEl=null; });
     return div;
 }
 
 // ── Pool helpers ──────────────────────────────────────────────────────────────
 function appendPhoto(zone, el) { zone.querySelectorAll('.empty-hint').forEach(h=>h.remove()); zone.appendChild(el); if(zone===pool) syncPoolHint(); }
-function syncPoolHint() { if(!pool.querySelector('.photo-item')&&!pool.querySelector('.empty-hint')){ const p=document.createElement('p'); p.className='empty-hint'; p.textContent='อัพโหลดรูปก่อน แล้วลากไปวางใน tier ด้านล่าง'; pool.appendChild(p); } }
+function syncPoolHint() {
+    if (!pool.querySelector('.photo-item') && !pool.querySelector('.empty-hint')) {
+        const p = document.createElement('p'); p.className='empty-hint'; p.textContent=t('poolHint'); pool.appendChild(p);
+    }
+}
 function collectFilenames(zone) { return zone ? [...zone.querySelectorAll('.photo-item[data-filename]')].map(el=>el.dataset.filename) : []; }
-function getAllFileIds(state) { return [...new Set([ ...(state.pool??[]), ...(state.tiers??[]).flatMap(t=>t.files??[]) ])]; }
+function getAllFileIds(state) { return [...new Set([...(state.pool??[]),...(state.tiers??[]).flatMap(t=>t.files??[])])]; }
 
 // ── Clear all ─────────────────────────────────────────────────────────────────
 function onClearAll() {
     const total = document.querySelectorAll('.photo-item').length;
     if(!total) return;
-    if(!confirm(`ต้องการลบรูปทั้งหมด ${total} รูป?\n(ข้อมูลที่บันทึกไว้จะถูกลบด้วย)`)) return;
+    if(!confirm(t('confirmClearAll', total))) return;
     document.querySelectorAll('.photo-item').forEach(el=>el.remove());
     syncPoolHint(); clearSavedState();
 }
 
-// ── Generate PNG (Canvas API) ─────────────────────────────────────────────────
+// ── Generate PNG ──────────────────────────────────────────────────────────────
 async function onGenerate() {
-    const tiers = tiersConfig
-        .map(t => ({ name:t.name, color:t.color, files:collectFilenames(document.getElementById('zone-'+t.id)) }))
-        .filter(t => t.files.length > 0);
-    if(!tiers.length) { showToast('ลากรูปไปวางใน tier ก่อนนะ'); return; }
-
+    const tiers = tiersConfig.map(x=>({name:x.name,color:x.color,files:collectFilenames(document.getElementById('zone-'+x.id))})).filter(x=>x.files.length>0);
+    if(!tiers.length) { showToast(t('toastNeedPhotos')); return; }
     const perRow = parseInt(document.querySelector('input[name="perrow"]:checked').value, 10);
-    showOverlay('กำลังสร้างภาพ...');
+    showOverlay(t('ovGenerating'));
     document.getElementById('btn-generate').disabled = true;
     try {
         const canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn));
         const blob   = await canvasToBlob(canvas);
         dlBlob(blob, 'oshi-tier.png');
-    } catch(e) {
-        showToast('สร้างภาพไม่สำเร็จ: '+e.message);
-    } finally {
-        hideOverlay();
-        document.getElementById('btn-generate').disabled = false;
-    }
+    } catch(e) { showToast(t('toastGenFail', e.message)); }
+    finally { hideOverlay(); document.getElementById('btn-generate').disabled = false; }
 }
 
 // ── Export ZIP ────────────────────────────────────────────────────────────────
 async function onExport() {
     const state = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
     const ids   = state ? getAllFileIds(state) : [];
-    if(!ids.length) { showToast('ไม่มีข้อมูลสำหรับ export'); return; }
-
-    showOverlay(`กำลัง export (0/${ids.length})...`);
+    if(!ids.length) { showToast(t('toastNoExport')); return; }
+    showOverlay(t('ovExporting',0,ids.length));
     try {
-        const zip  = new JSZip();
-        zip.file('state.json', JSON.stringify(state, null, 2));
+        const zip = new JSZip(); zip.file('state.json', JSON.stringify(state,null,2));
         const imgs = zip.folder('images');
-        for (const [i, id] of ids.entries()) {
-            overlayMsg.textContent = `กำลัง export (${i+1}/${ids.length})...`;
-            try { imgs.file(id, await fetch('uploads/'+id).then(r=>r.blob())); } catch {}
-        }
-        const content = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{level:6} });
-        dlBlob(content, 'oshi-tier-export.zip');
-        showToast('Export สำเร็จ');
-    } catch(e) {
-        showToast('Export ล้มเหลว: '+e.message);
-    } finally { hideOverlay(); }
+        for(const [i,id] of ids.entries()) { overlayMsg.textContent=t('ovExporting',i+1,ids.length); try { imgs.file(id, await fetch('uploads/'+id).then(r=>r.blob())); } catch {} }
+        const content = await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+        dlBlob(content,'oshi-tier-export.zip'); showToast(t('toastExportOk'));
+    } catch(e) { showToast(t('toastExportFail', e.message)); }
+    finally { hideOverlay(); }
 }
 
 // ── Import ZIP ────────────────────────────────────────────────────────────────
 async function onImport(file) {
-    showOverlay('กำลังอ่านไฟล์ ZIP...');
+    showOverlay(t('ovReading'));
     try {
-        const zip       = await JSZip.loadAsync(file);
-        const stateFile = zip.file('state.json');
-        if(!stateFile) throw new Error('ไม่พบ state.json ในไฟล์ ZIP');
-
-        const state     = JSON.parse(await stateFile.async('string'));
-        const imgFolder = zip.folder('images');
-        if(!imgFolder)  throw new Error('ไม่พบโฟลเดอร์ images ในไฟล์ ZIP');
-
-        const uploads = [];
-        imgFolder.forEach((path, f) => { if(!f.dir) uploads.push([path.split('/').pop(), f]); });
-
+        const zip = await JSZip.loadAsync(file);
+        const stateFile = zip.file('state.json'); if(!stateFile) throw new Error(t('errNoState'));
+        const state = JSON.parse(await stateFile.async('string'));
+        const imgFolder = zip.folder('images'); if(!imgFolder) throw new Error(t('errNoImages'));
+        const uploads = []; imgFolder.forEach((path,f)=>{ if(!f.dir) uploads.push([path.split('/').pop(),f]); });
         const idMap = {};
-        for (const [i, [oldId, zipFile]] of uploads.entries()) {
-            overlayMsg.textContent = `กำลังอัพโหลด (${i+1}/${uploads.length})...`;
+        for(const [i,[oldId,zipFile]] of uploads.entries()) {
+            overlayMsg.textContent = t('ovUploading',i+1,uploads.length);
             const blob = await zipFile.async('blob');
-            const fd   = new FormData();
-            fd.append('image', new File([blob], oldId, { type: mimeFromExt(oldId) }));
-            try {
-                const json = await fetch('upload.php',{method:'POST',body:fd}).then(r=>r.json());
-                if(json.success) idMap[oldId] = json.filename;
-            } catch {}
+            const fd = new FormData(); fd.append('image', new File([blob], oldId, {type:mimeFromExt(oldId)}));
+            try { const json=await fetch('upload.php',{method:'POST',body:fd}).then(r=>r.json()); if(json.success) idMap[oldId]=json.filename; } catch {}
         }
-
         const newState = remapState(state, idMap);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-        showToast('Import สำเร็จ กำลัง reload...');
-        setTimeout(() => location.reload(), 900);
-    } catch(e) {
-        showToast('Import ล้มเหลว: '+e.message);
-        hideOverlay();
-    }
+        showToast(t('toastImportOk'));
+        setTimeout(()=>location.reload(), 900);
+    } catch(e) { showToast(t('toastImportFail', e.message)); hideOverlay(); }
 }
 
 function remapState(state, idMap) {
     const r = id => idMap[id] ?? id;
-    return { ...state, pool:(state.pool??[]).map(r), tiers:(state.tiers??[]).map(t=>({...t,files:(t.files??[]).map(r)})) };
+    return {...state, pool:(state.pool??[]).map(r), tiers:(state.tiers??[]).map(x=>({...x,files:(x.files??[]).map(r)}))};
 }
 function mimeFromExt(name) {
-    return ({ jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp' })[name.split('.').pop().toLowerCase()] ?? 'image/jpeg';
+    return ({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp'})[name.split('.').pop().toLowerCase()]??'image/jpeg';
 }
 
-// ── Canvas generation helpers ─────────────────────────────────────────────────
+// ── Canvas generation ─────────────────────────────────────────────────────────
 async function buildTierCanvas(tiers, perRow, getSrc) {
-    const { LW, PW, PH, G } = CANVAS_CFG;
-    const th = n => Math.max(1,Math.ceil(n/perRow))*PH + (Math.max(1,Math.ceil(n/perRow))+1)*G;
-    const W  = LW + perRow*PW + (perRow+1)*G;
-    const H  = tiers.reduce((s,t) => s+th(t.files.length), 0);
-
+    const {LW,PW,PH,G} = CANVAS_CFG;
+    const th = n => Math.max(1,Math.ceil(n/perRow))*PH+(Math.max(1,Math.ceil(n/perRow))+1)*G;
+    const W  = LW+perRow*PW+(perRow+1)*G;
+    const H  = tiers.reduce((s,x)=>s+th(x.files.length),0);
     const canvas = document.createElement('canvas'); canvas.width=W; canvas.height=H;
-    const ctx    = canvas.getContext('2d');
-
-    let y = 0;
-    for (const tier of tiers) {
-        const h = th(tier.files.length);
-        ctx.fillStyle = tier.color; ctx.fillRect(0,y,W,h);
-
-        ctx.save();
-        ctx.fillStyle = 'rgba(0,0,0,0.65)';
-        ctx.font = 'bold 20px "Segoe UI","Noto Sans Thai",Arial,sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const ctx = canvas.getContext('2d');
+    let y=0;
+    for(const tier of tiers) {
+        const h=th(tier.files.length);
+        ctx.fillStyle=tier.color; ctx.fillRect(0,y,W,h);
+        ctx.save(); ctx.fillStyle='rgba(0,0,0,0.65)';
+        ctx.font='bold 20px "Segoe UI","Noto Sans Thai","Hiragino Sans",Arial,sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
         drawWrappedText(ctx, tier.name, LW/2, y+h/2, LW-10, 26);
         ctx.restore();
-
-        for (let i=0; i<tier.files.length; i++) {
-            const row=Math.floor(i/perRow), col=i%perRow;
-            const px=LW+G+col*(PW+G), py=y+G+row*(PH+G);
-            try {
-                const src = await getSrc(tier.files[i]);
-                const img = await loadImg(src);
-                const {sx,sy,sW,sH} = coverCrop(img.naturalWidth, img.naturalHeight, PW, PH);
-                ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH);
-            } catch {}
+        for(let i=0;i<tier.files.length;i++) {
+            const row=Math.floor(i/perRow),col=i%perRow;
+            const px=LW+G+col*(PW+G),py=y+G+row*(PH+G);
+            try { const src=await getSrc(tier.files[i]); const img=await loadImg(src); const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH); ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH); } catch {}
         }
-        y += h;
+        y+=h;
     }
     return canvas;
 }
-
-function drawWrappedText(ctx, text, cx, cy, maxW, lineH) {
-    if (ctx.measureText(text).width <= maxW) { ctx.fillText(text,cx,cy); return; }
-    const words = text.split(' '); const lines = []; let cur='';
-    for (const w of words) { const t=cur?cur+' '+w:w; if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t; }
-    if(cur) lines.push(cur);
-    const startY = cy-(lines.length-1)*lineH/2;
-    lines.forEach((l,i)=>ctx.fillText(l,cx,startY+i*lineH));
+function drawWrappedText(ctx,text,cx,cy,maxW,lineH) {
+    if(ctx.measureText(text).width<=maxW){ctx.fillText(text,cx,cy);return;}
+    const words=text.split(' '),lines=[];let cur='';
+    for(const w of words){const tt=cur?cur+' '+w:w;if(ctx.measureText(tt).width>maxW&&cur){lines.push(cur);cur=w;}else cur=tt;}
+    if(cur)lines.push(cur);
+    const sy=cy-(lines.length-1)*lineH/2; lines.forEach((l,i)=>ctx.fillText(l,cx,sy+i*lineH));
 }
+function loadImg(src){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>res(img);img.onerror=rej;img.src=src;});}
+function coverCrop(sw,sh,dw,dh){const sr=sw/sh,dr=dw/dh;if(sr>dr){const sW=Math.round(sh*dr);return{sx:Math.round((sw-sW)/2),sy:0,sW,sH:sh};}else{const sH=Math.round(sw/dr);return{sx:0,sy:Math.round((sh-sH)/2),sW:sw,sH};}}
+function canvasToBlob(canvas){return new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('toBlob failed')),'image/png'));}
+function dlBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 
-function loadImg(src) { return new Promise((res,rej) => { const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=src; }); }
-
-function coverCrop(sw,sh,dw,dh) {
-    const sr=sw/sh, dr=dw/dh;
-    if (sr>dr) { const sW=Math.round(sh*dr); return {sx:Math.round((sw-sW)/2),sy:0,sW,sH:sh}; }
-    else       { const sH=Math.round(sw/dr); return {sx:0,sy:Math.round((sh-sH)/2),sW:sw,sH}; }
-}
-
-function canvasToBlob(canvas) { return new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('toBlob failed')),'image/png')); }
-function dlBlob(blob, name)   { const u=URL.createObjectURL(blob),a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
-
-// ── Overlay helpers ───────────────────────────────────────────────────────────
-function showOverlay(msg) { overlayMsg.textContent=msg; overlay.classList.add('active'); }
-function hideOverlay()    { overlay.classList.remove('active'); }
+// ── Overlay ───────────────────────────────────────────────────────────────────
+function showOverlay(msg){overlayMsg.textContent=msg;overlay.classList.add('active');}
+function hideOverlay(){overlay.classList.remove('active');}
 
 // ── Persistence ───────────────────────────────────────────────────────────────
 function saveState() {
     const perRowEl = document.querySelector('input[name="perrow"]:checked');
-    const state = {
-        tiers:   tiersConfig.map(t => ({ ...t, files:collectFilenames(document.getElementById('zone-'+t.id)) })),
-        pool:    collectFilenames(pool),
-        perRow:  parseInt(perRowEl?.value??'6',10),
-        savedAt: Date.now(),
-    };
+    const state = { tiers:tiersConfig.map(x=>({...x,files:collectFilenames(document.getElementById('zone-'+x.id))})), pool:collectFilenames(pool), perRow:parseInt(perRowEl?.value??'6',10), savedAt:Date.now() };
     try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); updateSaveStatus(state.savedAt); } catch {}
 }
-
-function clearSavedState() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
-    saveStatus.textContent=''; saveStatus.classList.remove('visible');
-}
+function clearSavedState() { try{localStorage.removeItem(STORAGE_KEY);}catch{} saveStatus.textContent=''; saveStatus.classList.remove('visible'); }
 
 function restoreState() {
-    let state;
-    try { state=JSON.parse(localStorage.getItem(STORAGE_KEY)??'null'); } catch { return false; }
+    let state; try{state=JSON.parse(localStorage.getItem(STORAGE_KEY)??'null');}catch{return false;}
     if(!state) return false;
-
-    // Migrate v0.1 format
-    if (!state.tiers && (state.kami!==undefined||state.oshi!==undefined)) {
-        state.tiers = [];
+    if(!state.tiers&&(state.kami!==undefined||state.oshi!==undefined)) {
+        state.tiers=[];
         if(state.kami) state.tiers.push({id:'kami',name:'Kami',color:'#F08080',files:state.kami});
         if(state.oshi) state.tiers.push({id:'oshi',name:'Oshi',color:'#FFB347',files:state.oshi});
     }
-
-    if(!state.tiers?.length && !state.pool?.length) return false;
-
+    if(!state.tiers?.length&&!state.pool?.length) return false;
     if(state.tiers?.length) {
         tiersConfig = state.tiers.map(({id,name,color})=>({id,name,color}));
-        tiersConfig.forEach(tier => {
-            const {zone} = renderTierRow(tier);
-            (state.tiers.find(t=>t.id===tier.id)?.files??[]).forEach(fn=>appendPhoto(zone,makePhotoEl(fn,'uploads/'+fn)));
-        });
+        tiersConfig.forEach(tier=>{ const {zone}=renderTierRow(tier); (state.tiers.find(x=>x.id===tier.id)?.files??[]).forEach(fn=>appendPhoto(zone,makePhotoEl(fn,'uploads/'+fn))); });
     }
     (state.pool??[]).forEach(fn=>appendPhoto(pool,makePhotoEl(fn,'uploads/'+fn)));
-    if(state.perRow){ const r=document.querySelector(`input[name="perrow"][value="${state.perRow}"]`); if(r) r.checked=true; }
+    if(state.perRow){const r=document.querySelector(`input[name="perrow"][value="${state.perRow}"]`);if(r)r.checked=true;}
     if(state.savedAt) updateSaveStatus(state.savedAt);
-
-    const total=(state.pool?.length??0)+(state.tiers?.reduce((s,t)=>s+(t.files?.length??0),0)??0);
-    if(total>0) showToast(`โหลดข้อมูลที่บันทึกไว้ · ${total} รูป · บันทึกเมื่อ ${fmtTime(state.savedAt)}`);
+    const total=(state.pool?.length??0)+(state.tiers?.reduce((s,x)=>s+(x.files?.length??0),0)??0);
+    if(total>0) showToast(t('toastRestored', total, fmtTime(state.savedAt)));
     return true;
 }
-
-function updateSaveStatus(ts) { saveStatus.textContent=`💾 บันทึกแล้ว · ${fmtTime(ts)}`; saveStatus.classList.add('visible'); }
-function fmtTime(ts) { return new Date(ts).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }
+function updateSaveStatus(ts){saveStatus.textContent=t('savedAt',fmtTime(ts));saveStatus.classList.add('visible');}
+function fmtTime(ts){return new Date(ts).toLocaleTimeString({th:'th-TH',en:'en-US',jp:'ja-JP'}[currentLang]||'th-TH',{hour:'2-digit',minute:'2-digit'});}
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),4000); }
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),4000);}
 
 })();
 </script>

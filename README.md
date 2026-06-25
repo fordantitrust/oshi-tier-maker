@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.3.0rc1**
+**Version 0.4.0rc1**
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -379,6 +379,14 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 ---
 
 ## Changelog
+
+### 0.4.0rc1 — 2026-06-25
+- รองรับ 3 ภาษา: **TH / EN / JP** — ครอบคลุม UI labels, toast, confirm dialogs, overlay, help modal
+- Language switcher ปุ่ม TH/EN/JP ใต้ header — บันทึกใน localStorage ข้าม session
+- `I18N` object + `t()` function สำหรับ dynamic translation ทุก string
+- Help modal content แปลเป็น 3 ภาษา ผ่าน structured `HELP` data object
+- Time format ปรับตาม locale: `th-TH` / `en-US` / `ja-JP`
+- Font stack เพิ่ม Hiragino Sans (JP) และ Noto Sans Thai (TH)
 
 ### 0.3.0rc1 — 2026-06-25
 - **แยกเป็น 2 version**: PHP (`php/`) และ Static (`cf/`) ใน project เดียว
