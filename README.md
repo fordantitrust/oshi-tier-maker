@@ -28,19 +28,34 @@
 
 ## Features (ทั้งสอง version)
 
-- อัพโหลดรูปได้หลายไฟล์พร้อมกัน (คลิกหรือ drag & drop)
-- **Oshi Profile** — ตั้งชื่อ oshi แต่ละคนและ**อัพเดทรูปได้โดยไม่ต้องลากจัด tier ใหม่**
+### 👤 Oshi Profile
+- **ตั้งชื่อ oshi** — กด ✎ บนรูปหรือคลิกชื่อที่แถบด้านล่าง ชื่อแสดงบน card ตลอดเวลา
+- **อัพเดทรูปโดยไม่ขยับตำแหน่ง** — กด 📷 บนรูป เลือกรูปใหม่ oshi ยังอยู่ tier เดิม
+- ตั้งชื่อครั้งเดียว สลับรูปได้เรื่อยๆ โดยไม่ต้องลากใหม่ทุกรอบ
+
+### 🗂️ Tier List
+- อัพโหลดรูปได้หลายไฟล์พร้อมกัน (คลิกหรือ drag & drop) — JPG · PNG · GIF · WebP
+- ลากรูปจัด tier ได้อิสระ ย้ายข้าม tier หรือลากกลับ pool ได้
 - **Tier แบบกำหนดเอง** — เพิ่ม / ลบ tier ได้ไม่จำกัด
-- **แก้ไขชื่อ tier** — คลิกที่ชื่อเพื่อแก้ inline
-- **เปลี่ยนสี tier** — คลิกพื้นหลัง label เลือกได้ 8 สี
-- ลากรูปจัดใน tier ได้อิสระ ย้ายข้าม tier ได้
-- เลือกจำนวน **รูปต่อแถว** (3–8) ก่อนสร้างภาพ
-- สร้างไฟล์ **PNG** ด้วย Canvas API (client-side) — เลือกได้ 7 ธีม (Flat / Dark UI / Polaroid / Gradient / Neon / Pastel / Mono)
+- **แก้ไขชื่อ tier** — คลิกที่ชื่อเพื่อแก้ inline กด Enter หรือคลิกออกเพื่อบันทึก
+- **เปลี่ยนสี tier** — คลิกพื้นหลัง label เลือกได้ 8 สี preset
+
+### 🎨 Export PNG
+- เลือกจำนวน **รูปต่อแถว** (3–8)
+- เลือก **ธีม** 7 แบบ: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
+- เลือก **ขนาด**: Normal (×1) · Large (×2) · XL (×3)
+- สร้างภาพด้วย Canvas API ใน browser — ไม่ต้องพึ่ง server
+- ชื่อไฟล์สะท้อน theme และ size: `oshi-tier-dark_2x.png`
+
+### 💾 บันทึกข้อมูล
 - **Auto-save** ลงใน `localStorage` ทุกครั้งที่มีการเปลี่ยนแปลง
-- **Auto-restore** เมื่อเปิดหน้าใหม่ รวมถึงชื่อ tier, สี, และตำแหน่งรูป
-- **Export ZIP** — สำรองรูป + state ทั้งหมดเป็นไฟล์ .zip
-- **Import ZIP** — โหลดข้อมูลกลับมา (รองรับย้ายข้ามเครื่อง)
-- **คู่มือการใช้งาน in-app** — banner คลิกได้ที่ด้านบนหน้า เปิด modal อธิบายทุก feature
+- **Auto-restore** เมื่อเปิดหน้าใหม่ — tier, สี, ชื่อ oshi, ตำแหน่งรูปกลับมาครบ
+- **Export ZIP** — สำรองรูปทั้งหมด + tier config + oshi profiles เป็นไฟล์ .zip
+- **Import ZIP** — โหลดกลับมาได้ทุกเครื่อง รองรับทั้งสอง version และ schema เก่า
+
+### 🌐 อื่นๆ
+- **3 ภาษา** — TH / EN / JP สลับได้ทันที บันทึก preference ข้าม session
+- **คู่มือการใช้งาน in-app** — help modal อธิบายทุก feature ครบทุกภาษา
 
 ---
 
@@ -194,16 +209,18 @@ npx serve cf/                  # Node.js
 - [ ] เปิดหน้าแสดงผลได้ ไม่มี error
 - [ ] อัพโหลดรูปได้ ไม่มี error "บันทึกไฟล์ไม่สำเร็จ"
 - [ ] รูปที่อัพโหลดปรากฏใน `php/uploads/`
-- [ ] ลากรูปลง tier และสร้างภาพ PNG ได้
+- [ ] ตั้งชื่อ oshi และอัพเดทรูปได้ — oshi ยังอยู่ tier เดิม
+- [ ] ลากรูปลง tier และสร้างภาพ PNG ได้ (ลอง theme/size ต่างกัน)
 - [ ] Export ZIP และ Import กลับมาครบ
-- [ ] รีเฟรชหน้า — state restore กลับมาครบ
+- [ ] รีเฟรชหน้า — state restore กลับมาครบรวมชื่อ oshi
 
 **Static Version (CF)**
 - [ ] เปิดหน้าแสดงผลได้
 - [ ] อัพโหลดรูปได้ — progress bar storage อัพเดท
-- [ ] ลากรูปลง tier และสร้างภาพ PNG ได้
+- [ ] ตั้งชื่อ oshi และอัพเดทรูปได้ — oshi ยังอยู่ tier เดิม
+- [ ] ลากรูปลง tier และสร้างภาพ PNG ได้ (ลอง theme/size ต่างกัน)
 - [ ] Export ZIP และ Import กลับมาครบ
-- [ ] รีเฟรชหน้า — รูปโหลดกลับมาจาก browser storage
+- [ ] รีเฟรชหน้า — รูปโหลดกลับมาจาก browser storage รวมชื่อ oshi
 
 ---
 
@@ -227,18 +244,26 @@ oshi-tier/               ← project root
 ## Usage
 
 1. **อัพโหลดรูป** — คลิกหรือลากไฟล์มาวางที่ช่อง upload
-2. **จัด tier** — ลากรูปจาก pool ลงใน tier ที่ต้องการ
-3. **จัดการ tier**
+2. **ตั้งชื่อ oshi** (optional) — hover บนรูป → กด ✎ พิมพ์ชื่อ → Enter
+3. **จัด tier** — ลากรูปจาก pool ลงใน tier ที่ต้องการ
+4. **จัดการ tier**
    - คลิกชื่อ tier → แก้ไข inline → กด Enter หรือคลิกออก
    - คลิกพื้นหลัง (สีทึบ) → เลือกสีจาก color picker
-   - ปุ่ม × มุมบนขวา (แสดงเมื่อ hover) → ลบ tier
+   - ปุ่ม × มุมบนขวา (แสดงเมื่อ hover) → ลบ tier (รูปกลับ pool อัตโนมัติ)
    - ปุ่ม **＋ เพิ่ม tier** → สร้าง tier ใหม่
-4. **เลือกรูปต่อแถว** — เลือก 3–8
-5. กด **สร้างภาพ PNG** → ดาวน์โหลด `oshi-tier.png` ทันที
+5. **เลือกรูปต่อแถว** — เลือก 3–8
+6. **เลือกธีม** — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
+7. **เลือกขนาด** — Normal · Large ×2 · XL ×3
+8. กด **สร้างภาพ PNG** → ดาวน์โหลดทันที
+
+### อัพเดทรูป oshi (ไม่ต้องลากใหม่)
+1. hover บนรูปที่ต้องการอัพเดท → กด 📷
+2. เลือกรูปใหม่จาก file picker
+3. รูปอัพเดทในทันที — oshi ยังคงอยู่ tier เดิม ไม่ขยับ
 
 ### Export / Import ZIP
-- **Export** — บันทึกรูปทั้งหมด + tier config เป็นไฟล์ `.zip`
-- **Import** — โหลด `.zip` กลับมา (รองรับไฟล์จากทั้งสอง version)
+- **Export** — บันทึกรูปทั้งหมด + tier config + oshi profiles เป็นไฟล์ `.zip`
+- **Import** — โหลด `.zip` กลับมา รองรับทั้งสอง version และ schema เก่า (ก่อน 0.5.0)
 - ใช้ Import/Export เพื่อย้ายข้อมูลข้ามเครื่องหรือระหว่าง version
 
 ---
@@ -247,12 +272,12 @@ oshi-tier/               ← project root
 
 ### PHP Version
 - รูปถูก **บันทึกบนเซิร์ฟเวอร์** ใน `uploads/` ด้วยชื่อ `hex(random_bytes(16))`
-- `localStorage` เก็บเฉพาะ metadata (tier config, filenames, perRow)
+- `localStorage` เก็บ metadata: oshi profiles, tier config, ลำดับ oshi, perRow
 - Export ZIP จะ fetch รูปจาก server มาแพ็คใน browser
 
 ### Static Version (CF)
-- รูปถูก **บันทึกใน IndexedDB** ของเบราว์เซอร์เท่านั้น
-- ไม่มีข้อมูลใดส่งออกไปยัง server ภายนอก
+- รูปถูก **บันทึกใน IndexedDB** ของเบราว์เซอร์เท่านั้น — ไม่มีข้อมูลใดส่งออกนอก
+- `localStorage` เก็บ metadata: oshi profiles, tier config, ลำดับ oshi, perRow
 - Quota สูงสุด 50 MB (แสดง progress bar พร้อมเตือนเมื่อใกล้เต็ม)
 
 ---
@@ -331,12 +356,15 @@ oshi-tier-export.zip
 | Property | Value |
 |---|---|
 | Format | PNG |
-| Photo size | 110 × 145 px (cover-crop) |
+| Photo cell | 110 × 145 px (cover-crop) |
 | Label width | 140 px |
 | Gap | 4 px |
-| Canvas width | `140 + perRow × 110 + (perRow+1) × 4` px |
+| Canvas width (×1) | `140 + perRow × 110 + (perRow+1) × 4` px |
+| Scale | ×1 (Normal) · ×2 (Large) · ×3 (XL) — ผ่าน `ctx.scale()` |
+| Themes | 7 themes — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono |
+| Oshi name in PNG | แสดงใน Dark UI · Gradient · Neon · Pastel · Polaroid · Mono (ถ้าตั้งชื่อไว้) |
 | Tier color | กำหนดจาก UI — 8 สีให้เลือก |
-| Font | System font stack (Segoe UI / Noto Sans Thai / Arial) |
+| Font | System font stack (Segoe UI / Noto Sans Thai / Hiragino Sans / Arial) |
 | Generation | Browser Canvas API — ไม่ต้องพึ่ง server |
 
 ---
