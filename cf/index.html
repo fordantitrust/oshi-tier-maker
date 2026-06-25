@@ -89,6 +89,17 @@ header p { color:#666; font-size:14px; margin-bottom:12px; }
 .photo-item.is-loading { display:flex; align-items:center; justify-content:center; font-size:26px; animation:pulse 1s ease-in-out infinite alternate; }
 @keyframes pulse { from{opacity:.5} to{opacity:1} }
 
+/* ── Oshi profile ── */
+.oshi-name-bar { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.65); padding:2px 5px 3px; display:flex; align-items:center; gap:3px; min-height:21px; border-radius:0 0 5px 5px; }
+.oshi-name { color:#fff; font-size:10px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; cursor:text; line-height:1.4; }
+.oshi-name-input { flex:1; background:transparent; border:none; border-bottom:1px solid #ffb347; padding:0; font-size:10px; color:#fff; outline:none; min-width:0; font-weight:600; }
+.btn-rename-oshi { position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,.75); color:#dde; border:none; font-size:11px; line-height:22px; text-align:center; cursor:pointer; opacity:0; transition:opacity .15s; padding:0; }
+.photo-item:hover .btn-rename-oshi { opacity:1; }
+.btn-rename-oshi:hover { background:rgba(255,179,71,.85) !important; color:#0d0d1a; }
+.btn-update-photo { flex-shrink:0; width:18px; height:18px; border-radius:50%; background:rgba(255,255,255,.18); color:#fff; border:none; font-size:10px; line-height:18px; text-align:center; cursor:pointer; opacity:0; transition:opacity .15s; padding:0; }
+.photo-item:hover .btn-update-photo { opacity:1; }
+.btn-update-photo:hover { background:rgba(255,179,71,.85) !important; }
+
 /* ── Buttons ── */
 .btn-sm { background:transparent; border:1px solid #2e2e4a; color:#666; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; transition:all .2s; white-space:nowrap; }
 .btn-sm:hover { border-color:#ff8c8c; color:#ff8c8c; }
@@ -120,6 +131,11 @@ header p { color:#666; font-size:14px; margin-bottom:12px; }
 /* ── Toast ── */
 #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e1e38; border:1px solid #ff8c8c; color:#ff8c8c; padding:10px 22px; border-radius:8px; font-size:14px; transition:transform .25s; z-index:1000; white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── Footer ── */
+footer { text-align:center; padding:24px 16px 16px; }
+footer a { color:#2e2e4a; font-size:12px; text-decoration:none; transition:color .15s; }
+footer a:hover { color:#ffb347; }
 
 /* ── Help banner ── */
 .help-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,179,71,.07); border:1px solid rgba(255,179,71,.18); border-radius:10px; padding:10px 16px; margin-bottom:20px; cursor:pointer; transition:background .2s,border-color .2s; }
@@ -232,6 +248,7 @@ header p { color:#666; font-size:14px; margin-bottom:12px; }
 
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
+<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.5.0rc1 · GitHub ↗</a></footer>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">
@@ -253,7 +270,7 @@ let currentLang = localStorage.getItem(LANG_KEY) || 'th';
 const I18N = {
   th: {
     subtitle:        'อัพโหลดรูป → ลากจัด tier → สร้างภาพ PNG',
-    helpBanner:      '<strong>📖 คู่มือการใช้งาน</strong> &nbsp;·&nbsp; วิธีอัพโหลด · จัด tier · แก้ชื่อ/สี · สร้างภาพ PNG · Export/Import',
+    helpBanner:      '<strong>📖 คู่มือการใช้งาน</strong> &nbsp;·&nbsp; วิธีอัพโหลด · Oshi Profile · จัด tier · สร้างภาพ PNG · Export/Import',
     storageNotice:   '🖥️&nbsp; รูปทั้งหมด<strong>บันทึกในเบราว์เซอร์ของคุณเท่านั้น</strong> — ไม่มีข้อมูลใดส่งออกไปยังเซิร์ฟเวอร์',
     uploadTitle:     'คลิกหรือลากไฟล์มาวางที่นี่',
     uploadHint:      'JPG · PNG · GIF · WebP  |  รูปบันทึกในเบราว์เซอร์ ไม่ส่งขึ้น server',
@@ -268,6 +285,9 @@ const I18N = {
     colorHint:       '🎨 เปลี่ยนสี',
     delTierTitle:    'ลบ tier นี้',
     removePhotoTitle:'ลบรูป',
+    renameOshiTitle: 'แก้ชื่อ oshi',
+    updatePhotoTitle:'อัพเดทรูปใหม่ (ตำแหน่งใน tier คงเดิม)',
+    oshiNamePlaceholder: 'ชื่อ oshi...',
     quotaChecking:   'กำลังตรวจสอบ...',
     quotaOf:         (u,m) => `${u} / ${m} MB`,
     defaultTierName: n  => `Tier ${n}`,
@@ -297,7 +317,7 @@ const I18N = {
   },
   en: {
     subtitle:        'Upload photos → Arrange tiers → Export PNG',
-    helpBanner:      '<strong>📖 User Guide</strong> &nbsp;·&nbsp; Upload · Arrange tiers · Edit name/color · Export PNG · Export/Import',
+    helpBanner:      '<strong>📖 User Guide</strong> &nbsp;·&nbsp; Upload · Oshi Profile · Arrange tiers · Export PNG · Export/Import',
     storageNotice:   '🖥️&nbsp; All photos are stored <strong>in your browser only</strong> — no data is sent to any server',
     uploadTitle:     'Click or drag files here',
     uploadHint:      'JPG · PNG · GIF · WebP  |  Stored locally in your browser',
@@ -312,6 +332,9 @@ const I18N = {
     colorHint:       '🎨 Color',
     delTierTitle:    'Delete tier',
     removePhotoTitle:'Remove photo',
+    renameOshiTitle: 'Rename oshi',
+    updatePhotoTitle:'Update photo (keeps tier position)',
+    oshiNamePlaceholder: 'Oshi name...',
     quotaChecking:   'Checking...',
     quotaOf:         (u,m) => `${u} / ${m} MB`,
     defaultTierName: n  => `Tier ${n}`,
@@ -341,7 +364,7 @@ const I18N = {
   },
   jp: {
     subtitle:        '画像アップロード → Tier 整理 → PNG 出力',
-    helpBanner:      '<strong>📖 使い方ガイド</strong> &nbsp;·&nbsp; アップロード · Tier 整理 · 名前/色変更 · PNG 出力 · Export/Import',
+    helpBanner:      '<strong>📖 使い方ガイド</strong> &nbsp;·&nbsp; アップロード · Oshi Profile · Tier 整理 · PNG 出力 · Export/Import',
     storageNotice:   '🖥️&nbsp; 全ての画像は<strong>お使いのブラウザにのみ保存</strong>されます — 外部サーバーへの送信は一切ありません',
     uploadTitle:     'クリックまたはファイルをドラッグ',
     uploadHint:      'JPG · PNG · GIF · WebP  |  ブラウザにローカル保存',
@@ -356,6 +379,9 @@ const I18N = {
     colorHint:       '🎨 色変更',
     delTierTitle:    'Tier を削除',
     removePhotoTitle:'画像を削除',
+    renameOshiTitle: '名前を変更',
+    updatePhotoTitle:'写真を更新（Tier の位置はそのまま）',
+    oshiNamePlaceholder: '名前...',
     quotaChecking:   '確認中...',
     quotaOf:         (u,m) => `${u} / ${m} MB`,
     defaultTierName: n  => `Tier ${n}`,
@@ -385,12 +411,12 @@ const I18N = {
   },
 };
 
-// Help modal content (CF version: browser storage tip + storage section)
 const HELP = {
   th: { title:'📖 คู่มือการใช้งาน', sections:[
     { h:'📁 อัพโหลดรูป', li:['คลิกหรือลากไฟล์มาวางที่ช่อง upload','รองรับ JPG · PNG · GIF · WebP','อัพโหลดหลายไฟล์พร้อมกันได้'], tip:'📌 รูปทั้งหมดเก็บไว้ในเบราว์เซอร์ของคุณ ไม่ถูกส่งไปที่ใดทั้งสิ้น' },
+    { h:'👤 Oshi Profile', li:['กด <span class="help-kbd">✎</span> บนรูปเพื่อตั้งชื่อ oshi — ชื่อจะแสดงบนรูปตลอดเวลา','กด <span class="help-kbd">📷</span> เพื่ออัพเดทรูปใหม่ — <strong>ตำแหน่งใน tier ยังคงอยู่เดิม</strong>','ตั้งชื่อครั้งเดียว แล้วเปลี่ยนรูปได้เรื่อยๆ โดยไม่ต้องลากใหม่'], tip:'💡 คลิกที่ชื่อบนรูปโดยตรงก็สามารถแก้ชื่อได้เช่นกัน' },
     { h:'🖱️ จัดรูปลง Tier', li:['ลากรูปจาก pool ด้านบนลงใน tier ที่ต้องการ','ลากย้ายระหว่าง tier ได้อิสระ หรือลากกลับ pool','กด <span class="help-kbd">×</span> บนรูปเพื่อลบออก'] },
-    { h:'✏️ จัดการ Tier', li:['<strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก','<strong>คลิกพื้นหลังสี</strong> → เลือกสีจาก 8 สี','ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier','เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ','ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่ พร้อมตั้งชื่อทันที'] },
+    { h:'✏️ จัดการ Tier', li:['<strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก','<strong>คลิกพื้นหลังสี</strong> → เลือกสีจาก 8 สี','ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier','เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ','ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่'] },
     { h:'🎨 สร้างภาพ PNG', li:['เลือก <strong>รูปต่อแถว</strong> (3–8) ให้เหมาะกับจำนวนรูปที่มี','กด "สร้างภาพ PNG" → ดาวน์โหลด <strong>oshi-tier.png</strong> ทันที','Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ'] },
     { h:'📦 Export / Import', li:['<strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip','<strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น'], tip:'💡 ควร Export ไว้ก่อน — ถ้าล้างข้อมูลเบราว์เซอร์หรือใช้โหมด Private รูปจะหายทั้งหมด' },
     { h:'🗄️ พื้นที่จัดเก็บ', li:['รูปทั้งหมดเก็บไว้ในเบราว์เซอร์ — ดูพื้นที่ที่ใช้ได้จาก progress bar ด้านบน','จำกัดพื้นที่รวม <strong>50 MB</strong> — จะแจ้งเตือนเมื่อใกล้เต็ม'] },
@@ -398,8 +424,9 @@ const HELP = {
   ]},
   en: { title:'📖 User Guide', sections:[
     { h:'📁 Upload Photos', li:['Click or drag files into the upload area','Supports JPG · PNG · GIF · WebP','Multiple files can be uploaded at once'], tip:'📌 Photos are stored in your browser only — nothing is sent to any server' },
+    { h:'👤 Oshi Profile', li:['Click <span class="help-kbd">✎</span> on a photo to set the oshi\'s name — shown on the card at all times','Click <span class="help-kbd">📷</span> to update the photo — <strong>tier position is preserved</strong>','Name your oshi once, then swap photos anytime without re-dragging'], tip:'💡 You can also click the name text directly on the card to rename' },
     { h:'🖱️ Arrange Photos', li:['Drag photos from the pool above into any tier','Freely move photos between tiers or back to pool','Press <span class="help-kbd">×</span> on a photo to remove it'] },
-    { h:'✏️ Manage Tiers', li:['<strong>Click tier name</strong> → type new name → press <span class="help-kbd">Enter</span> or click away','<strong>Click color background</strong> → choose from 8 colors','<span class="help-kbd">×</span> button top-right (hover to show) → delete tier','Photos in a deleted tier return to pool automatically','<strong>＋ Add tier</strong> button → create new tier with immediate name edit'] },
+    { h:'✏️ Manage Tiers', li:['<strong>Click tier name</strong> → type new name → press <span class="help-kbd">Enter</span> or click away','<strong>Click color background</strong> → choose from 8 colors','<span class="help-kbd">×</span> button top-right (hover to show) → delete tier','Photos in a deleted tier return to pool automatically','<strong>＋ Add tier</strong> button → create a new tier'] },
     { h:'🎨 Export PNG', li:['Choose <strong>photos per row</strong> (3–8) to match your count','Click "Export PNG" → download <strong>oshi-tier.png</strong> immediately','Empty tiers are excluded from the image'] },
     { h:'📦 Export / Import', li:['<strong>Export</strong> → save all photos and tier layout as a .zip file','<strong>Import</strong> → restore a .zip to recover or transfer data'], tip:'💡 Export before clearing browser data or using Private mode — photos will be permanently lost otherwise' },
     { h:'🗄️ Storage', li:['Photos are stored in your browser — check usage via the progress bar above','Total limit: <strong>50 MB</strong> — a warning appears when nearing capacity'] },
@@ -407,8 +434,9 @@ const HELP = {
   ]},
   jp: { title:'📖 使い方ガイド', sections:[
     { h:'📁 画像アップロード', li:['クリックまたはドラッグでアップロードエリアにファイルを追加','JPG · PNG · GIF · WebP 対応','複数ファイルを同時にアップロード可能'], tip:'📌 画像はブラウザにのみ保存されます — 外部サーバーへの送信は一切ありません' },
+    { h:'👤 Oshi Profile', li:['<span class="help-kbd">✎</span> ボタンで名前を設定 — カードに常時表示されます','<span class="help-kbd">📷</span> ボタンで写真を更新 — <strong>Tier の位置はそのまま維持</strong>','一度名前をつけたら、何度でも写真だけ交換可能'], tip:'💡 カード上の名前テキストをクリックして直接編集することもできます' },
     { h:'🖱️ Tier に配置', li:['上の pool から Tier にドラッグ','Tier 間や pool へ自由に移動可能','<span class="help-kbd">×</span> ボタンで画像を削除'] },
-    { h:'✏️ Tier を管理', li:['<strong>Tier 名をクリック</strong> → 新しい名前を入力 → <span class="help-kbd">Enter</span> またはクリックで確定','<strong>背景色をクリック</strong> → 8色から選択','右上の <span class="help-kbd">×</span>（ホバーで表示）→ Tier を削除','削除した Tier の画像は pool に戻ります','<strong>＋ Tier を追加</strong>ボタン → 新しい Tier を追加してすぐ名前を編集'] },
+    { h:'✏️ Tier を管理', li:['<strong>Tier 名をクリック</strong> → 新しい名前を入力 → <span class="help-kbd">Enter</span> またはクリックで確定','<strong>背景色をクリック</strong> → 8色から選択','右上の <span class="help-kbd">×</span>（ホバーで表示）→ Tier を削除','削除した Tier の画像は pool に戻ります','<strong>＋ Tier を追加</strong>ボタン → 新しい Tier を追加'] },
     { h:'🎨 PNG 出力', li:['<strong>1行の枚数</strong>（3〜8）を選択','「PNG を出力」をクリック → <strong>oshi-tier.png</strong> をダウンロード','空の Tier は画像に含まれません'] },
     { h:'📦 エクスポート / インポート', li:['<strong>エクスポート</strong> → 全画像と Tier 設定を .zip に保存','<strong>インポート</strong> → .zip を読み込んでデータを復元・転送'], tip:'💡 ブラウザデータの削除やプライベートモード使用前に必ずエクスポートしてください' },
     { h:'🗄️ ストレージ', li:['画像はブラウザに保存されます — 上部のプログレスバーで使用量を確認','上限: <strong>50 MB</strong> — 容量が不足する場合は警告が表示されます'] },
@@ -466,9 +494,10 @@ const CANVAS_CFG     = { LW:140, PW:110, PH:145, G:4 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let tiersConfig = DEFAULT_TIERS.map(x => ({ ...x }));
+let oshisMap    = new Map(); // oshi-id → { id, name, photo }
 let draggedEl   = null;
 let colorPicker = null;
-const blobUrls  = new Map();
+const blobUrls  = new Map(); // photo-filename → object URL
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
 const pool       = document.getElementById('pool');
@@ -506,15 +535,15 @@ const idb = (() => {
     };
 })();
 
-async function getBlobUrl(id) {
-    if (blobUrls.has(id)) return blobUrls.get(id);
-    const blob = await idb.get(id);
-    if (!blob) throw new Error('Image not found: '+id);
+async function getBlobUrl(photoId) {
+    if (blobUrls.has(photoId)) return blobUrls.get(photoId);
+    const blob = await idb.get(photoId);
+    if (!blob) throw new Error('Image not found: ' + photoId);
     const url = URL.createObjectURL(blob);
-    blobUrls.set(id, url);
+    blobUrls.set(photoId, url);
     return url;
 }
-function revokeBlobUrl(id) { const u = blobUrls.get(id); if(u){ URL.revokeObjectURL(u); blobUrls.delete(id); } }
+function revokeBlobUrl(photoId) { const u = blobUrls.get(photoId); if(u){ URL.revokeObjectURL(u); blobUrls.delete(photoId); } }
 
 // ── Quota check ───────────────────────────────────────────────────────────────
 async function updateQuota() {
@@ -653,7 +682,7 @@ function setupZoneDrop(zone) {
     zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); if(draggedEl){ appendPhoto(zone,draggedEl); saveState(); } });
 }
 
-// ── Upload → IndexedDB ────────────────────────────────────────────────────────
+// ── Upload → IndexedDB → create oshi ─────────────────────────────────────────
 function setupUploadZone() {
     const uz = document.getElementById('upload-zone'), fi = document.getElementById('file-input');
     uz.addEventListener('click', () => fi.click());
@@ -673,36 +702,108 @@ async function storeFile(file) {
     }
     const ph = makeLoadingEl(); appendPhoto(pool, ph);
     try {
-        const ext = mimeToExt(file.type);
-        const id  = crypto.randomUUID() + '.' + ext;
-        await idb.put(id, file);
+        const ext     = mimeToExt(file.type);
+        const photoId = crypto.randomUUID() + '.' + ext;
+        const oshiId  = 'oshi-' + crypto.randomUUID();
+        const oshi    = { id: oshiId, name: '', photo: photoId };
+        await idb.put(photoId, file);
         const url = URL.createObjectURL(file);
-        blobUrls.set(id, url);
-        ph.replaceWith(makePhotoEl(id, url));
+        blobUrls.set(photoId, url);
+        oshisMap.set(oshiId, oshi);
+        ph.replaceWith(makeOshiEl(oshi, url));
         saveState(); updateQuota();
     } catch(e) { ph.remove(); showToast(t('toastStoreErr', e.message)); }
 }
 
-// ── Element factories ─────────────────────────────────────────────────────────
+// ── Oshi element factory ──────────────────────────────────────────────────────
 function makeLoadingEl() { const d=document.createElement('div'); d.className='photo-item is-loading'; d.textContent='⏳'; return d; }
 
-function makePhotoEl(id, blobUrl) {
+function makeOshiEl(oshi, photoUrl) {
     const div = document.createElement('div');
-    div.className='photo-item'; div.draggable=true; div.dataset.filename=id;
-    const img = document.createElement('img'); img.src=blobUrl; img.alt=''; img.draggable=false;
+    div.className = 'photo-item'; div.draggable = true; div.dataset.oshiId = oshi.id;
+
+    const img = document.createElement('img'); img.src = photoUrl; img.alt = ''; img.draggable = false;
     img.addEventListener('error', async () => {
-        try { const url=await getBlobUrl(id); img.src=url; }
-        catch { div.remove(); syncPoolHint(); revokeBlobUrl(id); await idb.delete(id); saveState(); updateQuota(); }
+        try { const url = await getBlobUrl(oshi.photo); img.src = url; }
+        catch { await removeOshi(div, oshi); }
     });
-    const btn = document.createElement('button'); btn.className='btn-remove'; btn.type='button'; btn.textContent='×'; btn.title=t('removePhotoTitle');
-    btn.addEventListener('click', async e => {
-        e.stopPropagation(); div.remove(); syncPoolHint();
-        revokeBlobUrl(id); await idb.delete(id); saveState(); updateQuota();
-    });
-    div.append(img, btn);
+
+    // Remove button (top-right)
+    const btnRemove = document.createElement('button');
+    btnRemove.className = 'btn-remove'; btnRemove.type = 'button'; btnRemove.textContent = '×'; btnRemove.title = t('removePhotoTitle');
+    btnRemove.addEventListener('click', async e => { e.stopPropagation(); await removeOshi(div, oshi); });
+
+    // Rename button (top-left)
+    const btnRename = document.createElement('button');
+    btnRename.className = 'btn-rename-oshi'; btnRename.type = 'button'; btnRename.textContent = '✎'; btnRename.title = t('renameOshiTitle');
+    btnRename.addEventListener('click', e => { e.stopPropagation(); startOshiRename(oshi, nameEl); });
+
+    // Name bar (bottom overlay)
+    const nameBar = document.createElement('div'); nameBar.className = 'oshi-name-bar';
+    const nameEl  = document.createElement('span'); nameEl.className = 'oshi-name'; nameEl.textContent = oshi.name;
+    nameEl.addEventListener('click', e => { e.stopPropagation(); startOshiRename(oshi, nameEl); });
+
+    // Update photo button (inside name bar, right side)
+    const fileInput = document.createElement('input'); fileInput.type = 'file'; fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp'; fileInput.style.display = 'none';
+    fileInput.addEventListener('change', async e => { if(e.target.files[0]) await updateOshiPhoto(oshi, img, e.target.files[0]); fileInput.value = ''; });
+
+    const btnUpdatePhoto = document.createElement('button');
+    btnUpdatePhoto.className = 'btn-update-photo'; btnUpdatePhoto.type = 'button'; btnUpdatePhoto.textContent = '📷'; btnUpdatePhoto.title = t('updatePhotoTitle');
+    btnUpdatePhoto.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+
+    nameBar.append(nameEl, btnUpdatePhoto);
+    div.append(img, btnRemove, btnRename, nameBar, fileInput);
+
     div.addEventListener('dragstart', e => { draggedEl=div; e.dataTransfer.effectAllowed='move'; requestAnimationFrame(()=>div.style.opacity='.4'); });
     div.addEventListener('dragend', () => { div.style.opacity=''; draggedEl=null; });
     return div;
+}
+
+// ── Oshi operations ───────────────────────────────────────────────────────────
+async function removeOshi(div, oshi) {
+    div.remove(); syncPoolHint();
+    revokeBlobUrl(oshi.photo);
+    await idb.delete(oshi.photo);
+    oshisMap.delete(oshi.id);
+    saveState(); updateQuota();
+}
+
+async function updateOshiPhoto(oshi, imgEl, file) {
+    const usedBytes = await idb.totalSize();
+    if (usedBytes + file.size > QUOTA_LIMIT_MB * 1024 * 1024) {
+        showToast(t('toastStoreFull', (usedBytes/1024/1024).toFixed(1), QUOTA_LIMIT_MB)); return;
+    }
+    try {
+        const ext        = mimeToExt(file.type);
+        const newPhotoId = crypto.randomUUID() + '.' + ext;
+        await idb.put(newPhotoId, file);
+        const url = URL.createObjectURL(file);
+        blobUrls.set(newPhotoId, url);
+        // Clean up old photo
+        const oldPhotoId = oshi.photo;
+        revokeBlobUrl(oldPhotoId);
+        await idb.delete(oldPhotoId);
+        // Update oshi in place (no DOM move)
+        oshi.photo = newPhotoId;
+        imgEl.src  = url;
+        saveState(); updateQuota();
+    } catch(e) { showToast(t('toastStoreErr', e.message)); }
+}
+
+function startOshiRename(oshi, nameEl) {
+    const input = document.createElement('input');
+    input.type = 'text'; input.className = 'oshi-name-input';
+    input.value = oshi.name; input.maxLength = 20; input.placeholder = t('oshiNamePlaceholder');
+    const commit = () => {
+        oshi.name = input.value.trim();
+        nameEl.textContent = oshi.name;
+        input.replaceWith(nameEl);
+        saveState();
+    };
+    input.addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();commit();} if(e.key==='Escape') input.replaceWith(nameEl); });
+    input.addEventListener('blur', commit);
+    input.addEventListener('click', e => e.stopPropagation());
+    nameEl.replaceWith(input); input.focus(); input.select();
 }
 
 // ── Pool helpers ──────────────────────────────────────────────────────────────
@@ -712,8 +813,11 @@ function syncPoolHint() {
         const p = document.createElement('p'); p.className='empty-hint'; p.textContent=t('poolHint'); pool.appendChild(p);
     }
 }
-function collectFilenames(zone) { return zone ? [...zone.querySelectorAll('.photo-item[data-filename]')].map(el=>el.dataset.filename) : []; }
-function getAllFileIds(state) { return [...new Set([...(state.pool??[]),...(state.tiers??[]).flatMap(x=>x.files??[])])]; }
+function collectOshiIds(zone) { return zone ? [...zone.querySelectorAll('.photo-item[data-oshi-id]')].map(el=>el.dataset.oshiId) : []; }
+function getAllPhotoIds(state) {
+    if (state.oshis) return [...new Set(state.oshis.map(o => o.photo))];
+    return [...new Set([...(state.pool??[]),...(state.tiers??[]).flatMap(x=>x.files??[])])];
+}
 
 // ── Clear all ─────────────────────────────────────────────────────────────────
 async function onClearAll() {
@@ -723,13 +827,18 @@ async function onClearAll() {
     document.querySelectorAll('.photo-item').forEach(el=>el.remove());
     syncPoolHint();
     blobUrls.forEach(url => URL.revokeObjectURL(url)); blobUrls.clear();
+    oshisMap.clear();
     await idb.clear();
     clearSavedState(); updateQuota();
 }
 
 // ── Generate PNG ──────────────────────────────────────────────────────────────
 async function onGenerate() {
-    const tiers = tiersConfig.map(x=>({name:x.name,color:x.color,files:collectFilenames(document.getElementById('zone-'+x.id))})).filter(x=>x.files.length>0);
+    const tiers = tiersConfig.map(x => {
+        const oshiIds = collectOshiIds(document.getElementById('zone-'+x.id));
+        const photos  = oshiIds.map(id => oshisMap.get(id)?.photo).filter(Boolean);
+        return { name:x.name, color:x.color, files:photos };
+    }).filter(x=>x.files.length>0);
     if(!tiers.length) { showToast(t('toastNeedPhotos')); return; }
     const perRow = parseInt(document.querySelector('input[name="perrow"]:checked').value, 10);
     showOverlay(t('ovGenerating'));
@@ -745,7 +854,7 @@ async function onGenerate() {
 // ── Export ZIP ────────────────────────────────────────────────────────────────
 async function onExport() {
     const state = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    const ids   = state ? getAllFileIds(state) : [];
+    const ids   = state ? getAllPhotoIds(state) : [];
     if(!ids.length) { showToast(t('toastNoExport')); return; }
     showOverlay(t('ovExporting',0,ids.length));
     try {
@@ -828,7 +937,7 @@ function loadImg(src){return new Promise((res,rej)=>{const img=new Image();img.o
 function coverCrop(sw,sh,dw,dh){const sr=sw/sh,dr=dw/dh;if(sr>dr){const sW=Math.round(sh*dr);return{sx:Math.round((sw-sW)/2),sy:0,sW,sH:sh};}else{const sH=Math.round(sw/dr);return{sx:0,sy:Math.round((sh-sH)/2),sW:sw,sH};}}
 function canvasToBlob(canvas){return new Promise((res,rej)=>canvas.toBlob(b=>b?res(b):rej(new Error('toBlob failed')),'image/png'));}
 function dlBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);}
-function mimeToExt(mime){return({  'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp'})[mime]??'jpg';}
+function mimeToExt(mime){return({'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp'})[mime]??'jpg';}
 
 // ── Overlay ───────────────────────────────────────────────────────────────────
 function showOverlay(msg){overlayMsg.textContent=msg;overlay.classList.add('active');}
@@ -837,7 +946,13 @@ function hideOverlay(){overlay.classList.remove('active');}
 // ── Persistence ───────────────────────────────────────────────────────────────
 function saveState() {
     const perRowEl = document.querySelector('input[name="perrow"]:checked');
-    const state = { tiers:tiersConfig.map(x=>({...x,files:collectFilenames(document.getElementById('zone-'+x.id))})), pool:collectFilenames(pool), perRow:parseInt(perRowEl?.value??'6',10), savedAt:Date.now() };
+    const state = {
+        oshis: [...oshisMap.values()],
+        tiers: tiersConfig.map(x=>({ ...x, oshis: collectOshiIds(document.getElementById('zone-'+x.id)) })),
+        pool:  collectOshiIds(pool),
+        perRow: parseInt(perRowEl?.value??'6',10),
+        savedAt: Date.now(),
+    };
     try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); updateSaveStatus(state.savedAt); } catch {}
 }
 function clearSavedState() { try{localStorage.removeItem(STORAGE_KEY);}catch{} saveStatus.textContent=''; saveStatus.classList.remove('visible'); }
@@ -845,28 +960,51 @@ function clearSavedState() { try{localStorage.removeItem(STORAGE_KEY);}catch{} s
 async function restoreState() {
     let state; try{state=JSON.parse(localStorage.getItem(STORAGE_KEY)??'null');}catch{return false;}
     if(!state) return false;
+
+    // Very old schema (kami/oshi keys)
     if(!state.tiers&&(state.kami!==undefined||state.oshi!==undefined)) {
         state.tiers=[];
         if(state.kami) state.tiers.push({id:'kami',name:'Kami',color:'#F08080',files:state.kami});
         if(state.oshi) state.tiers.push({id:'oshi',name:'Oshi',color:'#FFB347',files:state.oshi});
     }
+
+    // Migrate pre-oshi schema (tiers had files[], no oshis key)
+    if (!state.oshis) {
+        state.oshis = [];
+        const migrateFiles = files => (files??[]).map(fn => {
+            const oshi = { id:'oshi-'+fn, name:'', photo:fn };
+            state.oshis.push(oshi);
+            return oshi.id;
+        });
+        state.tiers = (state.tiers??[]).map(x => ({ ...x, oshis: migrateFiles(x.files) }));
+        state.pool  = migrateFiles(state.pool??[]);
+    }
+
     if(!state.tiers?.length&&!state.pool?.length) return false;
+
+    // Build oshisMap
+    (state.oshis??[]).forEach(o => oshisMap.set(o.id, { ...o }));
+
     if(state.tiers?.length) {
         tiersConfig = state.tiers.map(({id,name,color})=>({id,name,color}));
         for(const tier of tiersConfig) {
             const {zone} = renderTierRow(tier);
-            const saved = state.tiers.find(x=>x.id===tier.id);
-            for(const fn of (saved?.files??[])) {
-                try { const url=await getBlobUrl(fn); appendPhoto(zone,makePhotoEl(fn,url)); } catch {}
+            const saved  = state.tiers.find(x=>x.id===tier.id);
+            for(const oshiId of (saved?.oshis??[])) {
+                const oshi = oshisMap.get(oshiId);
+                if(!oshi) continue;
+                try { const url=await getBlobUrl(oshi.photo); appendPhoto(zone,makeOshiEl(oshi,url)); } catch {}
             }
         }
     }
-    for(const fn of (state.pool??[])) {
-        try { const url=await getBlobUrl(fn); appendPhoto(pool,makePhotoEl(fn,url)); } catch {}
+    for(const oshiId of (state.pool??[])) {
+        const oshi = oshisMap.get(oshiId);
+        if(!oshi) continue;
+        try { const url=await getBlobUrl(oshi.photo); appendPhoto(pool,makeOshiEl(oshi,url)); } catch {}
     }
     if(state.perRow){const r=document.querySelector(`input[name="perrow"][value="${state.perRow}"]`);if(r)r.checked=true;}
     if(state.savedAt) updateSaveStatus(state.savedAt);
-    const total=(state.pool?.length??0)+(state.tiers?.reduce((s,x)=>s+(x.files?.length??0),0)??0);
+    const total=(state.pool?.length??0)+(state.tiers?.reduce((s,x)=>s+(x.oshis?.length??0),0)??0);
     if(total>0) showToast(t('toastRestored', total, fmtTime(state.savedAt)));
     return true;
 }

@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.4.0rc1**
+**Version 0.5.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -29,6 +29,7 @@
 ## Features (ทั้งสอง version)
 
 - อัพโหลดรูปได้หลายไฟล์พร้อมกัน (คลิกหรือ drag & drop)
+- **Oshi Profile** — ตั้งชื่อ oshi แต่ละคนและ**อัพเดทรูปได้โดยไม่ต้องลากจัด tier ใหม่**
 - **Tier แบบกำหนดเอง** — เพิ่ม / ลบ tier ได้ไม่จำกัด
 - **แก้ไขชื่อ tier** — คลิกที่ชื่อเพื่อแก้ inline
 - **เปลี่ยนสี tier** — คลิกพื้นหลัง label เลือกได้ 8 สี
@@ -300,19 +301,28 @@ oshi-tier-export.zip
 
 ```json
 {
-  "tiers": [
-    { "id": "kami", "name": "Kami", "color": "#F08080", "files": ["abc.jpg"] },
-    { "id": "oshi", "name": "Oshi", "color": "#FFB347", "files": ["def.png"] }
+  "oshis": [
+    { "id": "oshi-abc123", "name": "Mirei", "photo": "abc.jpg" },
+    { "id": "oshi-def456", "name": "Noa",   "photo": "def.png" }
   ],
-  "pool": ["ghi.webp"],
+  "tiers": [
+    { "id": "kami", "name": "Kami", "color": "#F08080", "oshis": ["oshi-abc123"] },
+    { "id": "oshi", "name": "Oshi", "color": "#FFB347", "oshis": ["oshi-def456"] }
+  ],
+  "pool": ["oshi-ghi789"],
   "perRow": 6,
   "savedAt": 1750000000000
 }
 ```
 
-**PHP version import**: re-uploads แต่ละรูปผ่าน `upload.php` → ได้ filename ใหม่ → remap references ใน state อัตโนมัติ
+`oshis[]` — คือ oshi profile แต่ละคน มี `id` (stable), `name` (ชื่อ), `photo` (filename ของรูปปัจจุบัน)
+`tiers[].oshis` และ `pool` — เก็บ oshi ID ซึ่งคงที่ไม่เปลี่ยนแม้จะเปลี่ยนรูป
+
+**PHP version import**: re-uploads แต่ละรูปผ่าน `upload.php` → remap `oshi.photo` อัตโนมัติ — oshi ID และตำแหน่งใน tier คงเดิม
 
 **CF version import**: restore blob ลง IndexedDB โดยตรง — filename/ID คงเดิม ไม่ต้อง remap
+
+**Backward compat**: ZIP จาก version ก่อน (schema ไม่มี `oshis` key) จะถูก migrate อัตโนมัติเมื่อ import/restore
 
 ---
 
@@ -379,6 +389,15 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 ---
 
 ## Changelog
+
+### 0.5.0rc1 — 2026-06-25
+- **Oshi Profile** — แต่ละรูปเป็น oshi entity ที่มี `id` คงที่, ตั้งชื่อได้, และเปลี่ยนรูปได้โดยไม่ขยับตำแหน่งใน tier
+- ปุ่ม **✎** (hover บนรูป) — ตั้ง/แก้ชื่อ oshi แบบ inline
+- ปุ่ม **📷** (hover บนรูป) — อัพเดทรูปใหม่ผ่าน file picker, oshi ยังอยู่ tier เดิม
+- แถบชื่อที่ด้านล่างของแต่ละ card — แสดงชื่อตลอดเวลา, คลิกได้เพื่อแก้
+- ZIP schema ใหม่: เพิ่ม `oshis[]` array, `tiers[].oshis` แทน `tiers[].files`
+- Migration อัตโนมัติ: state/ZIP รูปแบบเก่าอ่านได้ทันที ไม่ต้อง import ใหม่
+- Footer แสดง version และ link ไป GitHub repository
 
 ### 0.4.0rc1 — 2026-06-25
 - รองรับ 3 ภาษา: **TH / EN / JP** — ครอบคลุม UI labels, toast, confirm dialogs, overlay, help modal
