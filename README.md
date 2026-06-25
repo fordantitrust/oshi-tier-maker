@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.5.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
+**Version 0.6.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -35,7 +35,7 @@
 - **เปลี่ยนสี tier** — คลิกพื้นหลัง label เลือกได้ 8 สี
 - ลากรูปจัดใน tier ได้อิสระ ย้ายข้าม tier ได้
 - เลือกจำนวน **รูปต่อแถว** (3–8) ก่อนสร้างภาพ
-- สร้างไฟล์ **PNG** ด้วย Canvas API (client-side) — cover-crop อัตโนมัติ
+- สร้างไฟล์ **PNG** ด้วย Canvas API (client-side) — เลือกได้ 7 ธีม (Flat / Dark UI / Polaroid / Gradient / Neon / Pastel / Mono)
 - **Auto-save** ลงใน `localStorage` ทุกครั้งที่มีการเปลี่ยนแปลง
 - **Auto-restore** เมื่อเปิดหน้าใหม่ รวมถึงชื่อ tier, สี, และตำแหน่งรูป
 - **Export ZIP** — สำรองรูป + state ทั้งหมดเป็นไฟล์ .zip
@@ -388,7 +388,33 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 
 ---
 
+## Export Themes
+
+เลือกธีมจาก selector ก่อนกดสร้างภาพ — ไฟล์ดาวน์โหลดตั้งชื่อตาม theme อัตโนมัติ
+
+| ธีม | feel | พื้นหลัง | การจัดวางรูป |
+|---|---|---|---|
+| **Flat** (สีสด) | classic | tier color เต็มทั้งแถว | รูปชิดขอบ |
+| **Dark UI** | เหมือนหน้าเว็บ | `#0d0d1a` dark | rounded card + name bar |
+| **Polaroid** | analog/film | cream `#f5f0eb` | white frame + ชื่อใต้รูป |
+| **Gradient** | cinematic | `#111` + color bleed | รูปชิดขอบ + name bar |
+| **Neon** | cyber/futuristic | `#000` pitch black | rounded card + glowing border สี tier |
+| **Pastel** | soft/airy | `#f4f4f4` light | rounded card + soft shadow |
+| **Mono** | editorial/zine | `#1a1a1a` dark | รูป grayscale + colored accent dot |
+
+---
+
 ## Changelog
+
+### 0.6.0rc1 — 2026-06-25
+- **7 Export Themes** — เลือก theme ก่อน export PNG: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
+- Theme selector แสดงใต้ perrow selector, รองรับ TH/EN/JP
+- ชื่อไฟล์ดาวน์โหลดตาม theme: `oshi-tier-neon.png`, `oshi-tier-polaroid.png` ฯลฯ
+- Polaroid: white frame พร้อมชื่อ oshi ใต้กรอบ — cream background
+- Gradient: tier color bleed จาก label เข้าไปในพื้นที่รูปด้านซ้าย — cinematic feel
+- Neon: pitch black background, glowing card border และ tier label text ในสี tier
+- Pastel: lightened tier color label, rounded cards + soft drop shadow, ชื่อ oshi ใต้รูป
+- Mono: grayscale photos, grayscale label + colored accent dot, dark background
 
 ### 0.5.0rc1 — 2026-06-25
 - **Oshi Profile** — แต่ละรูปเป็น oshi entity ที่มี `id` คงที่, ตั้งชื่อได้, และเปลี่ยนรูปได้โดยไม่ขยับตำแหน่งใน tier

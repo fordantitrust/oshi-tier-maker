@@ -111,6 +111,13 @@ header p { color:#666; font-size:14px; margin-bottom:12px; }
 .perrow-pills input[type="radio"]:checked + label { background:linear-gradient(135deg,#ff8c8c,#ffb347); border-color:transparent; color:#fff; }
 .perrow-pills label:hover { border-color:#ffb347; color:#ffb347; }
 
+/* ── Theme pills ── */
+.theme-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.theme-pills input[type="radio"] { display:none; }
+.theme-pills label { display:inline-flex; align-items:center; justify-content:center; height:36px; padding:0 16px; border-radius:8px; border:1px solid #2e2e4a; background:#0d0d1a; color:#888; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; user-select:none; white-space:nowrap; }
+.theme-pills input[type="radio"]:checked + label { background:linear-gradient(135deg,#ff8c8c,#ffb347); border-color:transparent; color:#fff; }
+.theme-pills label:hover { border-color:#ffb347; color:#ffb347; }
+
 /* ── Save status ── */
 .save-status { font-size:12px; color:#555; opacity:0; transition:opacity .3s; white-space:nowrap; }
 .save-status.visible { opacity:1; }
@@ -228,6 +235,20 @@ footer a:hover { color:#ffb347; }
         </div>
     </div>
 
+    <!-- Theme selector -->
+    <div class="perrow-group" style="margin-top:8px;">
+        <label id="theme-label"></label>
+        <div class="theme-pills">
+            <input type="radio" name="theme" id="th1" value="flat" checked><label for="th1" id="th1-label"></label>
+            <input type="radio" name="theme" id="th2" value="dark"><label for="th2" id="th2-label"></label>
+            <input type="radio" name="theme" id="th3" value="polaroid"><label for="th3" id="th3-label"></label>
+            <input type="radio" name="theme" id="th4" value="gradient"><label for="th4" id="th4-label"></label>
+            <input type="radio" name="theme" id="th5" value="neon"><label for="th5" id="th5-label"></label>
+            <input type="radio" name="theme" id="th6" value="pastel"><label for="th6" id="th6-label"></label>
+            <input type="radio" name="theme" id="th7" value="mono"><label for="th7" id="th7-label"></label>
+        </div>
+    </div>
+
     <button id="btn-generate" class="btn-generate"><span>🎨</span><span id="btn-generate-text"></span></button>
 
 </div>
@@ -274,6 +295,14 @@ const I18N = {
     renameOshiTitle:  'แก้ชื่อ oshi',
     updatePhotoTitle: 'อัพเดทรูปใหม่ (ตำแหน่งใน tier คงเดิม)',
     oshiNamePlaceholder: 'ชื่อ oshi...',
+    themeLabel:      'ธีม PNG :',
+    themePillFlat:   'สีสด',
+    themePillDark:     'Dark UI',
+    themePillPolaroid: 'โพลารอยด์',
+    themePillGradient: 'Gradient',
+    themePillNeon:     'นีออน',
+    themePillPastel:   'Pastel',
+    themePillMono:     'Mono',
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `ต้องการลบรูปทั้งหมด ${n} รูป?\n(ข้อมูลที่บันทึกไว้จะถูกลบด้วย)`,
     confirmDelTier:   n  => `ลบ tier นี้? รูป ${n} รูปจะกลับไปที่ pool`,
@@ -316,6 +345,14 @@ const I18N = {
     renameOshiTitle:  'Rename oshi',
     updatePhotoTitle: 'Update photo (keeps tier position)',
     oshiNamePlaceholder: 'Oshi name...',
+    themeLabel:      'PNG theme :',
+    themePillFlat:   'Flat',
+    themePillDark:     'Dark UI',
+    themePillPolaroid: 'Polaroid',
+    themePillGradient: 'Gradient',
+    themePillNeon:     'Neon',
+    themePillPastel:   'Pastel',
+    themePillMono:     'Mono',
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `Delete all ${n} photo(s)?\n(Saved data will also be cleared)`,
     confirmDelTier:   n  => `Delete this tier? ${n} photo(s) will return to pool`,
@@ -358,6 +395,14 @@ const I18N = {
     renameOshiTitle:  '名前を変更',
     updatePhotoTitle: '写真を更新（Tier の位置はそのまま）',
     oshiNamePlaceholder: '名前...',
+    themeLabel:      'PNG テーマ :',
+    themePillFlat:   'フラット',
+    themePillDark:     'ダーク UI',
+    themePillPolaroid: 'ポラロイド',
+    themePillGradient: 'グラデーション',
+    themePillNeon:     'ネオン',
+    themePillPastel:   'パステル',
+    themePillMono:     'モノクロ',
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `全ての画像 ${n} 枚を削除しますか？\n(保存データも削除されます)`,
     confirmDelTier:   n  => `この Tier を削除しますか？${n} 枚の画像が pool に戻ります`,
@@ -435,6 +480,14 @@ function applyLang() {
     const hint = pool.querySelector('.empty-hint');
     if (hint) hint.textContent = t('poolHint');
     document.querySelectorAll('.color-hint').forEach(el => el.textContent = t('colorHint'));
+    document.getElementById('theme-label').textContent  = t('themeLabel');
+    document.getElementById('th1-label').textContent     = t('themePillFlat');
+    document.getElementById('th2-label').textContent     = t('themePillDark');
+    document.getElementById('th3-label').textContent     = t('themePillPolaroid');
+    document.getElementById('th4-label').textContent     = t('themePillGradient');
+    document.getElementById('th5-label').textContent     = t('themePillNeon');
+    document.getElementById('th6-label').textContent     = t('themePillPastel');
+    document.getElementById('th7-label').textContent     = t('themePillMono');
     const hc = document.getElementById('help-content');
     if (hc) hc.innerHTML = buildHelpContent();
     localStorage.setItem(LANG_KEY, currentLang);
@@ -707,19 +760,24 @@ function onClearAll() {
 
 // ── Generate PNG ──────────────────────────────────────────────────────────────
 async function onGenerate() {
+    const theme = document.querySelector('input[name="theme"]:checked')?.value ?? 'flat';
     const tiers = tiersConfig.map(x => {
         const oshiIds = collectOshiIds(document.getElementById('zone-'+x.id));
-        const photos  = oshiIds.map(id => oshisMap.get(id)?.photo).filter(Boolean);
-        return { name:x.name, color:x.color, files:photos };
-    }).filter(x=>x.files.length>0);
+        const items = oshiIds.map(id => {
+            const oshi = oshisMap.get(id);
+            return oshi ? { photo: oshi.photo, name: oshi.name || '' } : null;
+        }).filter(Boolean);
+        return { name:x.name, color:x.color, items };
+    }).filter(x=>x.items.length>0);
     if(!tiers.length) { showToast(t('toastNeedPhotos')); return; }
     const perRow = parseInt(document.querySelector('input[name="perrow"]:checked').value, 10);
     showOverlay(t('ovGenerating'));
     document.getElementById('btn-generate').disabled = true;
     try {
-        const canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn));
+        const canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn), theme);
         const blob   = await canvasToBlob(canvas);
-        dlBlob(blob, 'oshi-tier.png');
+        const fn={flat:'oshi-tier.png',dark:'oshi-tier-dark.png',polaroid:'oshi-tier-polaroid.png',gradient:'oshi-tier-gradient.png',neon:'oshi-tier-neon.png',pastel:'oshi-tier-pastel.png',mono:'oshi-tier-mono.png'};
+        dlBlob(blob, fn[theme]??'oshi-tier.png');
     } catch(e) { showToast(t('toastGenFail', e.message)); }
     finally { hideOverlay(); document.getElementById('btn-generate').disabled = false; }
 }
@@ -798,30 +856,183 @@ function mimeFromExt(name) {
 }
 
 // ── Canvas generation ─────────────────────────────────────────────────────────
-async function buildTierCanvas(tiers, perRow, getSrc) {
+async function buildTierCanvas(tiers, perRow, getSrc, theme='flat') {
     const {LW,PW,PH,G} = CANVAS_CFG;
     const th = n => Math.max(1,Math.ceil(n/perRow))*PH+(Math.max(1,Math.ceil(n/perRow))+1)*G;
     const W  = LW+perRow*PW+(perRow+1)*G;
-    const H  = tiers.reduce((s,x)=>s+th(x.files.length),0);
+    const H  = tiers.reduce((s,x)=>s+th(x.items.length),0);
     const canvas = document.createElement('canvas'); canvas.width=W; canvas.height=H;
     const ctx = canvas.getContext('2d');
+
+    const BG={dark:'#0d0d1a',gradient:'#111111',neon:'#000000',mono:'#1a1a1a',polaroid:'#f5f0eb',pastel:'#f4f4f4'};
+    if(BG[theme]){ ctx.fillStyle=BG[theme]; ctx.fillRect(0,0,W,H); }
+
     let y=0;
     for(const tier of tiers) {
-        const h=th(tier.files.length);
-        ctx.fillStyle=tier.color; ctx.fillRect(0,y,W,h);
-        ctx.save(); ctx.fillStyle='rgba(0,0,0,0.65)';
+        const n=tier.items.length, h=th(n);
+
+        // ── Row background ──
+        if(theme==='flat'){
+            ctx.fillStyle=tier.color; ctx.fillRect(0,y,W,h);
+        } else if(theme==='dark'){
+            ctx.fillStyle='#13132b'; ctx.fillRect(LW,y,W-LW,h);
+            ctx.fillStyle=tier.color; ctx.fillRect(0,y,LW,h);
+            if(y>0){ ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(0,y,W,2); }
+        } else if(theme==='gradient'){
+            ctx.fillStyle=tier.color; ctx.fillRect(0,y,LW,h);
+            const grd=ctx.createLinearGradient(LW,0,LW+160,0);
+            grd.addColorStop(0,tier.color+'55'); grd.addColorStop(1,'transparent');
+            ctx.fillStyle=grd; ctx.fillRect(LW,y,160,h);
+            if(y>0){ ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(0,y,W,1); }
+        } else if(theme==='neon'){
+            ctx.fillStyle='#0c0c0c'; ctx.fillRect(LW,y,W-LW,h);
+            ctx.fillStyle='#050505'; ctx.fillRect(0,y,LW,h);
+            ctx.save(); ctx.shadowBlur=10; ctx.shadowColor=tier.color;
+            ctx.fillStyle=tier.color; ctx.fillRect(LW-2,y,2,h);
+            ctx.restore();
+            if(y>0){ ctx.fillStyle='rgba(255,255,255,.04)'; ctx.fillRect(0,y,W,1); }
+        } else if(theme==='pastel'){
+            ctx.fillStyle='#fff'; ctx.fillRect(LW,y,W-LW,h);
+            ctx.fillStyle=lightenHex(tier.color,.72); ctx.fillRect(0,y,LW,h);
+            ctx.fillStyle=tier.color; ctx.fillRect(LW-3,y,3,h);
+            if(y>0){ ctx.fillStyle='#e0e0e0'; ctx.fillRect(0,y,W,1); }
+        } else if(theme==='polaroid'){
+            ctx.fillStyle='#f5f0eb'; ctx.fillRect(LW,y,W-LW,h);
+            ctx.fillStyle=tier.color; ctx.fillRect(0,y,LW,h);
+            if(y>0){ ctx.fillStyle='rgba(0,0,0,.07)'; ctx.fillRect(0,y,W,1); }
+        } else if(theme==='mono'){
+            ctx.fillStyle='#242424'; ctx.fillRect(LW,y,W-LW,h);
+            const gl=grayscaleLum(tier.color);
+            ctx.fillStyle=`rgb(${gl},${gl},${gl})`; ctx.fillRect(0,y,LW,h);
+            if(y>0){ ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(0,y,W,1); }
+        }
+
+        // ── Tier label text ──
+        ctx.save();
+        if(theme==='neon'){
+            ctx.shadowBlur=18; ctx.shadowColor=tier.color; ctx.fillStyle='#fff';
+        } else if(theme==='mono'){
+            ctx.fillStyle='#fff';
+        } else {
+            ctx.fillStyle='rgba(0,0,0,0.65)';
+        }
         ctx.font='bold 20px "Segoe UI","Noto Sans Thai","Hiragino Sans",Arial,sans-serif';
         ctx.textAlign='center'; ctx.textBaseline='middle';
         drawWrappedText(ctx, tier.name, LW/2, y+h/2, LW-10, 26);
         ctx.restore();
-        for(let i=0;i<tier.files.length;i++) {
+        if(theme==='mono'){
+            ctx.fillStyle=tier.color;
+            ctx.beginPath(); ctx.arc(LW/2, y+h-12, 5, 0, Math.PI*2); ctx.fill();
+        }
+
+        // ── Photos ──
+        for(let i=0;i<n;i++){
+            const item=tier.items[i];
             const row=Math.floor(i/perRow),col=i%perRow;
             const px=LW+G+col*(PW+G),py=y+G+row*(PH+G);
-            try { const src=await getSrc(tier.files[i]); const img=await loadImg(src); const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH); ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH); } catch {}
+
+            if(theme==='dark'){
+                ctx.fillStyle='#1e1e38'; ctxRoundRect(ctx,px,py,PW,PH,5); ctx.fill();
+            } else if(theme==='neon'){
+                ctx.fillStyle='#111'; ctxRoundRect(ctx,px,py,PW,PH,5); ctx.fill();
+            } else if(theme==='pastel'){
+                ctx.save(); ctx.shadowBlur=10; ctx.shadowOffsetY=3; ctx.shadowColor='rgba(0,0,0,.10)';
+                ctx.fillStyle='#fff'; ctxRoundRect(ctx,px,py,PW,PH,10); ctx.fill(); ctx.restore();
+            } else if(theme==='polaroid'){
+                ctx.save(); ctx.shadowBlur=8; ctx.shadowOffsetY=4; ctx.shadowColor='rgba(0,0,0,.20)';
+                ctx.fillStyle='#fff'; ctx.fillRect(px,py,PW,PH); ctx.restore();
+            } else if(theme==='mono'){
+                ctx.fillStyle='#2e2e2e'; ctx.fillRect(px,py,PW,PH);
+            }
+
+            try {
+                const src=await getSrc(item.photo);
+                const img=await loadImg(src);
+
+                if(theme==='flat'){
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH);
+                    ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH);
+                } else if(theme==='dark'){
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH);
+                    ctx.save(); ctxRoundRect(ctx,px,py,PW,PH,5); ctx.clip();
+                    ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH); ctx.restore();
+                    if(item.name) drawCardNameBar(ctx,item.name,px,py,PW,PH);
+                } else if(theme==='gradient'){
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH);
+                    ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH);
+                    if(item.name) drawCardNameBar(ctx,item.name,px,py,PW,PH);
+                } else if(theme==='neon'){
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH);
+                    ctx.save(); ctxRoundRect(ctx,px,py,PW,PH,5); ctx.clip();
+                    ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH); ctx.restore();
+                    ctx.save(); ctx.shadowBlur=14; ctx.shadowColor=tier.color;
+                    ctx.strokeStyle=tier.color; ctx.lineWidth=1.5;
+                    ctxRoundRect(ctx,px+.75,py+.75,PW-1.5,PH-1.5,5); ctx.stroke(); ctx.restore();
+                    if(item.name) drawCardNameBar(ctx,item.name,px,py,PW,PH);
+                } else if(theme==='pastel'){
+                    const [ip,ib]=[5,18];
+                    const iw=PW-ip*2, ih=PH-ip-ib;
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,iw,ih);
+                    ctx.save(); ctxRoundRect(ctx,px+ip,py+ip,iw,ih,4); ctx.clip();
+                    ctx.drawImage(img,sx,sy,sW,sH,px+ip,py+ip,iw,ih); ctx.restore();
+                    if(item.name){
+                        ctx.fillStyle='#666';
+                        ctx.font='10px "Segoe UI","Noto Sans Thai","Hiragino Sans",Arial,sans-serif';
+                        ctx.textAlign='center'; ctx.textBaseline='middle';
+                        ctx.fillText(truncCanvasText(ctx,item.name,PW-8),px+PW/2,py+PH-ib/2);
+                    }
+                } else if(theme==='polaroid'){
+                    const [ip,ib]=[6,26];
+                    const iw=PW-ip*2, ih=PH-ip-ib;
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,iw,ih);
+                    ctx.save(); ctx.beginPath(); ctx.rect(px+ip,py+ip,iw,ih); ctx.clip();
+                    ctx.drawImage(img,sx,sy,sW,sH,px+ip,py+ip,iw,ih); ctx.restore();
+                    ctx.fillStyle='#555';
+                    ctx.font='10px "Segoe UI","Noto Sans Thai","Hiragino Sans",Arial,sans-serif';
+                    ctx.textAlign='center'; ctx.textBaseline='middle';
+                    ctx.fillText(truncCanvasText(ctx,item.name||'',PW-10),px+PW/2,py+PH-ib/2);
+                } else if(theme==='mono'){
+                    const {sx,sy,sW,sH}=coverCrop(img.naturalWidth,img.naturalHeight,PW,PH);
+                    ctx.save(); ctx.filter='grayscale(1)';
+                    ctx.drawImage(img,sx,sy,sW,sH,px,py,PW,PH);
+                    ctx.filter='none'; ctx.restore();
+                    if(item.name) drawCardNameBar(ctx,item.name,px,py,PW,PH);
+                }
+            } catch {}
         }
         y+=h;
     }
+    if(theme==='dark'){ ctx.strokeStyle='#2e2e4a'; ctx.lineWidth=1; ctx.strokeRect(.5,.5,W-1,H-1); }
     return canvas;
+}
+function ctxRoundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(x,y,w,h,r); else ctx.rect(x,y,w,h);
+}
+function drawCardNameBar(ctx,name,px,py,PW,PH){
+    const barH=20;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(px,py+PH-barH,PW,barH); ctx.clip();
+    ctx.fillStyle='rgba(0,0,0,.65)'; ctx.fillRect(px,py+PH-barH,PW,barH);
+    ctx.fillStyle='#fff';
+    ctx.font='bold 10px "Segoe UI","Noto Sans Thai","Hiragino Sans",Arial,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(truncCanvasText(ctx,name,PW-8),px+PW/2,py+PH-barH/2);
+    ctx.restore();
+}
+function truncCanvasText(ctx,text,maxW){
+    if(ctx.measureText(text).width<=maxW) return text;
+    let t=text;
+    while(t.length>0&&ctx.measureText(t+'…').width>maxW) t=t.slice(0,-1);
+    return t+'…';
+}
+function lightenHex(hex,amount){
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return `rgb(${Math.round(r+(255-r)*amount)},${Math.round(g+(255-g)*amount)},${Math.round(b+(255-b)*amount)})`;
+}
+function grayscaleLum(hex){
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return Math.round(.299*r+.587*g+.114*b);
 }
 function drawWrappedText(ctx,text,cx,cy,maxW,lineH) {
     if(ctx.measureText(text).width<=maxW){ctx.fillText(text,cx,cy);return;}
