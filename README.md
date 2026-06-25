@@ -14,15 +14,15 @@
 
 ## Versions
 
-| | PHP Version | Cloudflare Serverless |
+| | PHP Version | Static Version |
 |---|---|---|
-| **Directory** | `oshi-tier/php/` | `oshi-tier/cf/` |
+| **Directory** | `php/` | `cf/` |
 | **Entry point** | `php/index.php` | `cf/index.html` |
 | **Upload storage** | Server filesystem (`uploads/`) | IndexedDB (browser) |
 | **Image generation** | Canvas API (client-side) | Canvas API (client-side) |
 | **Server required** | PHP 8.2 | ไม่ต้องมี server |
 | **Cross-device** | ✅ ผ่าน server หรือ ZIP | ZIP เท่านั้น |
-| **Quota** | Disk space ของ server | ~50 MB ต่อ browser |
+| **Storage limit** | Disk space ของ server | ~50 MB ต่อ browser |
 
 ---
 
@@ -49,11 +49,11 @@
 | Component | Version |
 |---|---|
 | PHP | 8.2+ |
-| Web server | Apache / Nginx / `php -S` |
+| Web server | Apache / Nginx / Caddy / `php -S` |
 
-### Cloudflare Serverless Version
-- Modern browser (Chrome 90+, Firefox 88+, Safari 15+)
-- รองรับ IndexedDB และ Canvas API
+### Static Version (CF)
+- Modern browser: Chrome 90+ / Firefox 88+ / Safari 15+ / Edge 90+
+- ต้องการ HTTPS หรือ `localhost` — IndexedDB ถูก block บน `file://` ใน Chrome
 - ไม่ต้องมี server หรือ backend ใดๆ
 
 ---
@@ -61,21 +61,148 @@
 ## Installation
 
 ### PHP Version
-1. วางโฟลเดอร์ `oshi-tier/php/` ลงใน document root (หรือ symlink/alias ชี้มาที่โฟลเดอร์นี้)
 
-2. ตรวจสอบ permission ของ `php/uploads/`
-   ```bash
-   chmod 755 php/uploads/   # Linux/macOS
+#### Apache (XAMPP / WAMP / LAMP)
+
+1. copy โฟลเดอร์ `php/` ไปไว้ใน document root
+
+   ```
+   # XAMPP (Windows)
+   C:\xampp\htdocs\oshi-tier\
+
+   # XAMPP (macOS)
+   /Applications/XAMPP/htdocs/oshi-tier/
+
+   # Ubuntu / Debian
+   /var/www/html/oshi-tier/
    ```
 
-3. เปิด `http://localhost/php/` (หรือตาม path ที่ตั้งค่า web server)
+2. ตั้ง permission ของ `uploads/`
 
-### Cloudflare Serverless Version
-1. deploy โฟลเดอร์ `oshi-tier/cf/` บน static hosting
-   - Cloudflare Pages: `npx wrangler pages deploy cf/`
-   - หรือเปิด `cf/index.html` ตรงๆ ในเบราว์เซอร์ (file://)
+   ```bash
+   # Linux / macOS
+   chmod 755 php/uploads/
+   # ถ้ายังเขียนไม่ได้
+   chmod 777 php/uploads/
+   ```
 
-2. ไม่ต้องตั้งค่าอะไรเพิ่มเติม
+   Windows (XAMPP): ไม่ต้องตั้ง permission — เขียนได้เลย
+
+3. เปิด `http://localhost/oshi-tier/`
+
+#### Nginx
+
+1. copy โฟลเดอร์ `php/` ไปไว้ที่ต้องการ เช่น `/var/www/oshi-tier/`
+
+2. เพิ่ม server block:
+
+   ```nginx
+   server {
+       listen 80;
+       server_name oshi-tier.example.com;
+       root /var/www/oshi-tier;
+       index index.php;
+
+       location / { try_files $uri $uri/ =404; }
+
+       location ~ \.php$ {
+           fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+           include fastcgi_params;
+       }
+
+       location /uploads/ {
+           location ~ \.php$ { deny all; }
+       }
+   }
+   ```
+
+3. ตั้ง permission และ restart:
+
+   ```bash
+   chmod 755 /var/www/oshi-tier/uploads/
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+#### PHP Built-in Server (development)
+
+```bash
+cd php/
+php -S localhost:8080
+```
+
+เปิด `http://localhost:8080` — ไม่ควรใช้ใน production
+
+---
+
+### Static Version (CF)
+
+ไฟล์เดียว (`cf/index.html`) วางได้บน static hosting ใดก็ได้
+
+#### Cloudflare Pages
+```bash
+npm install -g wrangler
+wrangler login
+wrangler pages deploy cf/ --project-name=oshi-tier
+```
+
+#### GitHub Pages
+```bash
+git init && git add cf/
+git commit -m "initial commit"
+git remote add origin https://github.com/<user>/<repo>.git
+git push -u origin main
+```
+จากนั้นไปที่ **Settings → Pages → Source** เลือก branch `main` โฟลเดอร์ `/cf`
+
+#### Netlify
+```bash
+# CLI
+npm install -g netlify-cli
+netlify deploy --dir=cf/ --prod
+```
+หรือ Drag & Drop โฟลเดอร์ `cf/` ที่ [app.netlify.com](https://app.netlify.com)
+
+#### Vercel
+```bash
+npm install -g vercel
+vercel cf/
+```
+
+#### VPS / Shared Hosting
+```bash
+scp cf/index.html user@server:/var/www/html/oshi-tier/
+# หรืออัพโหลดผ่าน FTP ไปที่ public_html/oshi-tier/
+```
+
+#### Local Development
+```bash
+php -S localhost:8080 -t cf/   # PHP
+python -m http.server 8080 --directory cf/   # Python 3
+npx serve cf/                  # Node.js
+```
+
+> ⚠️ **อย่าเปิดด้วย `file://` ใน Chrome** — IndexedDB จะถูก block
+> Firefox รองรับ `file://` ได้ปกติ
+
+---
+
+### ทดสอบหลังติดตั้ง
+
+**PHP Version**
+- [ ] เปิดหน้าแสดงผลได้ ไม่มี error
+- [ ] อัพโหลดรูปได้ ไม่มี error "บันทึกไฟล์ไม่สำเร็จ"
+- [ ] รูปที่อัพโหลดปรากฏใน `php/uploads/`
+- [ ] ลากรูปลง tier และสร้างภาพ PNG ได้
+- [ ] Export ZIP และ Import กลับมาครบ
+- [ ] รีเฟรชหน้า — state restore กลับมาครบ
+
+**Static Version (CF)**
+- [ ] เปิดหน้าแสดงผลได้
+- [ ] อัพโหลดรูปได้ — progress bar storage อัพเดท
+- [ ] ลากรูปลง tier และสร้างภาพ PNG ได้
+- [ ] Export ZIP และ Import กลับมาครบ
+- [ ] รีเฟรชหน้า — รูปโหลดกลับมาจาก browser storage
 
 ---
 
@@ -88,8 +215,9 @@ oshi-tier/               ← project root
 │   ├── upload.php       รับ AJAX upload → server filesystem
 │   └── uploads/
 │       └── .htaccess    กัน PHP execution และ directory listing
-├── cf/                  ← Cloudflare serverless version
-│   └── index.html       หน้าเดียว ครบทุกอย่าง (IndexedDB + Canvas)
+├── cf/                  ← Static version (ไม่ต้องมี server)
+│   └── index.html       หน้าเดียว ครบทุกอย่าง
+├── CLAUDE.md
 └── README.md
 ```
 
@@ -117,15 +245,45 @@ oshi-tier/               ← project root
 ## Storage Details
 
 ### PHP Version
-- รูปถูก **บันทึกบนเซิร์ฟเวอร์** ใน `uploads/` ด้วยชื่อ hex random
+- รูปถูก **บันทึกบนเซิร์ฟเวอร์** ใน `uploads/` ด้วยชื่อ `hex(random_bytes(16))`
 - `localStorage` เก็บเฉพาะ metadata (tier config, filenames, perRow)
-- Export ZIP จะ fetch รูปจากเซิร์ฟเวอร์มาแพ็ค
+- Export ZIP จะ fetch รูปจาก server มาแพ็คใน browser
 
-### Cloudflare Serverless Version
+### Static Version (CF)
 - รูปถูก **บันทึกใน IndexedDB** ของเบราว์เซอร์เท่านั้น
 - ไม่มีข้อมูลใดส่งออกไปยัง server ภายนอก
-- Quota สูงสุด 50 MB (แสดง progress bar)
-- รูปไม่คงอยู่ถ้าล้าง browser data หรือใช้ Private/Incognito
+- Quota สูงสุด 50 MB (แสดง progress bar พร้อมเตือนเมื่อใกล้เต็ม)
+
+---
+
+## localStorage & IndexedDB Caveats
+
+### localStorage (ทั้งสอง version)
+
+localStorage ใช้เก็บ **metadata เท่านั้น** — ชื่อ tier, สี, ลำดับรูป, perRow — ไม่เก็บ binary ใดๆ
+
+| สถานการณ์ | ผลที่เกิด |
+|---|---|
+| ล้าง site data / Clear cookies | tier config หาย แต่รูปยังอยู่ (PHP: บน server, CF: ใน IndexedDB) |
+| Incognito / Private mode | localStorage ทำงานได้ แต่ข้อมูลหายทันทีที่ปิด window |
+| เปิดสองแท็บพร้อมกัน | แต่ละแท็บ share state เดียวกัน — บันทึกทับกันได้ถ้าแก้พร้อมกัน |
+| เปลี่ยน domain / port | localStorage แยกกัน — state ไม่ข้ามกัน |
+
+### IndexedDB (Static version เท่านั้น)
+
+IndexedDB ใช้เก็บ **image blobs** ทั้งหมด — เป็นหัวใจหลักของ static version
+
+| สถานการณ์ | ผลที่เกิด |
+|---|---|
+| รีเฟรช / ปิด-เปิดแท็บ | รูปยังอยู่ — โหลดกลับมาอัตโนมัติ ✅ |
+| Incognito / Private mode | IndexedDB ทำงาน แต่**รูปหายทั้งหมดเมื่อปิด window** ⚠️ |
+| ล้าง site data / Clear cache | รูปหายทั้งหมด — ไม่สามารถกู้คืนได้ ⚠️ |
+| เปิดด้วย `file://` (Chrome) | IndexedDB ถูก block — รูปไม่ถูกบันทึก ❌ |
+| เปิดด้วย `file://` (Firefox) | ทำงานได้ปกติ ✅ |
+| Safari (ITP) | IndexedDB ทำงานได้ แต่ quota อาจถูกจำกัดและล้างอัตโนมัติถ้าไม่ได้ใช้นานกว่า 7 วัน ⚠️ |
+| Storage เต็ม (> 50 MB) | แจ้งเตือนและบล็อกการเพิ่มรูปใหม่ |
+
+> **คำแนะนำ**: ใช้ **Export ZIP เป็นประจำ** โดยเฉพาะก่อนล้าง browser data หรือถ้าใช้บน Safari — รูปที่อยู่ในเบราว์เซอร์เท่านั้นไม่มี backup อัตโนมัติ
 
 ---
 
@@ -141,7 +299,6 @@ oshi-tier-export.zip
 ```
 
 ```json
-// state.json
 {
   "tiers": [
     { "id": "kami", "name": "Kami", "color": "#F08080", "files": ["abc.jpg"] },
@@ -164,7 +321,7 @@ oshi-tier-export.zip
 | Property | Value |
 |---|---|
 | Format | PNG |
-| Photo size | 110 × 145 px (cover-crop, client-side Canvas) |
+| Photo size | 110 × 145 px (cover-crop) |
 | Label width | 140 px |
 | Gap | 4 px |
 | Canvas width | `140 + perRow × 110 + (perRow+1) × 4` px |
@@ -176,11 +333,48 @@ oshi-tier-export.zip
 
 ## Security (PHP Version)
 
-- ตรวจ MIME type จริงด้วย `finfo`
-- บันทึกชื่อไฟล์เป็น `hex(random_bytes(16))`
-- `basename()` กัน path traversal
-- `uploads/.htaccess` บล็อก PHP execution
+- ตรวจ MIME type จริงด้วย `finfo` (ไม่เชื่อ extension ที่ส่งมา)
+- บันทึกชื่อไฟล์เป็น `hex(random_bytes(16))` ไม่ใช้ชื่อเดิม
+- `basename()` กัน path traversal ทุก endpoint
+- `uploads/.htaccess` บล็อก PHP execution และ directory listing
 - จำกัดขนาดไฟล์ 10 MB / ไฟล์
+
+---
+
+## Troubleshooting
+
+### PHP Version
+
+**อัพโหลดไม่ได้ — "บันทึกไฟล์ไม่สำเร็จ"**
+```bash
+ls -la php/uploads/
+chmod 755 php/uploads/
+mkdir -p php/uploads/   # ถ้า folder ไม่มี
+```
+
+**รูปไม่แสดงหลัง upload**
+- ตรวจ browser console สำหรับ 404 error
+- ตรวจ web server ว่า serve ไฟล์จาก `uploads/` ได้
+
+**ภาพ PNG เป็นสีพื้น ไม่มีรูป**
+- อาจเกิดจาก CORS ถ้า `uploads/` อยู่คนละ origin — ในกรณีปกติ (same origin) ไม่มีปัญหา
+
+---
+
+### Static Version (CF)
+
+**รูปหายหลัง refresh**
+- ตรวจสอบว่าเปิดผ่าน `http://` ไม่ใช่ `file://` (Chrome block IndexedDB บน file://)
+- ตรวจสอบว่าไม่ได้อยู่ใน Incognito / Private mode
+- ตรวจ browser console: `indexedDB` ต้องไม่ undefined
+
+**Storage เต็ม / รูปเพิ่มไม่ได้**
+1. กด Export ZIP เพื่อสำรองข้อมูลก่อน
+2. กด "ล้างทั้งหมด" เพื่อล้าง storage
+3. Import ZIP กลับมาใหม่
+
+**Export ZIP ว่างเปล่า / ไม่มีรูป**
+- ตรวจสอบว่ารูปถูก restore จาก browser storage แล้ว (ไม่ใช่แค่แสดง broken icon)
 
 ---
 
@@ -190,11 +384,10 @@ oshi-tier-export.zip
 - **แยกเป็น 2 version**: PHP (`php/`) และ Static (`cf/`) ใน project เดียว
 - **ย้าย image generation จาก PHP GD → Canvas API** (client-side, ทั้งสอง version)
 - **ลบ GD dependency** ออกทั้งหมด — PHP version ต้องการแค่ PHP 8.2 + web server
-- **CF version**: IndexedDB เก็บรูปใน browser, ไม่มี server upload เลย
+- **Static version**: IndexedDB เก็บรูปใน browser, ไม่มี server upload เลย
 - **Export/Import ZIP** (JSZip) — ย้ายข้อมูลข้ามเครื่องได้, รองรับ cross-version
-- **Quota check 50 MB** พร้อม progress bar (CF version)
-- **คำเตือน storage** บอกผู้ใช้ว่ารูปอยู่ที่ไหน (server หรือ browser)
-- **คู่มือการใช้งาน in-app** — help banner + modal ครอบคลุมทุก feature เขียนสำหรับผู้ใช้ทั่วไป
+- **Quota check 50 MB** พร้อม progress bar (static version)
+- **คู่มือการใช้งาน in-app** — help banner + modal ครอบคลุมทุก feature
 
 ### 0.2.0rc1 — 2026-06-25
 - เพิ่ม / ลบ tier ได้ไม่จำกัด
