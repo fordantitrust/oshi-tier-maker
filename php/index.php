@@ -308,12 +308,24 @@ footer a:hover { color:#ffb347; }
     </div>
 
     <!-- Size selector -->
-    <div class="perrow-group" style="margin-top:8px;">
+    <div class="perrow-group" id="size-group" style="margin-top:8px;">
         <label id="size-label"></label>
         <div class="theme-pills">
             <input type="radio" name="size" id="sz1" value="1" checked><label for="sz1" id="sz1-label"></label>
             <input type="radio" name="size" id="sz2" value="2"><label for="sz2" id="sz2-label"></label>
             <input type="radio" name="size" id="sz3" value="3"><label for="sz3" id="sz3-label"></label>
+        </div>
+    </div>
+
+    <!-- Platform preset (overrides Size above with a fixed, padded canvas) -->
+    <div class="perrow-group" style="margin-top:8px;">
+        <label id="platform-label"></label>
+        <div class="theme-pills">
+            <input type="radio" name="platform" id="pf0" value="none" checked><label for="pf0" id="pf0-label"></label>
+            <input type="radio" name="platform" id="pf1" value="ig-post"><label for="pf1" id="pf1-label"></label>
+            <input type="radio" name="platform" id="pf2" value="ig-story"><label for="pf2" id="pf2-label"></label>
+            <input type="radio" name="platform" id="pf3" value="fb-post"><label for="pf3" id="pf3-label"></label>
+            <input type="radio" name="platform" id="pf4" value="x-post"><label for="pf4" id="pf4-label"></label>
         </div>
     </div>
 
@@ -330,7 +342,7 @@ footer a:hover { color:#ffb347; }
 
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
-<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.9.0rc1 · GitHub ↗</a></footer>
+<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.10.0 · GitHub ↗</a></footer>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">
@@ -406,6 +418,12 @@ const I18N = {
     sizePillNormal:  'Normal',
     sizePillLarge:   'Large ×2',
     sizePillXL:      'XL ×3',
+    platformLabel:   'ขนาดตาม Platform :',
+    platformPillNone:    'ไม่ใช้ (ตามขนาดด้านบน)',
+    platformPillIgPost:  'IG Post 1:1',
+    platformPillIgStory: 'IG Story 9:16',
+    platformPillFbPost:  'FB Post',
+    platformPillXPost:   'X Post 16:9',
     displayOptionsLabel: 'แสดงชื่อ :',
     showTierNameText: 'ชื่อ Tier',
     showOshiNameText: 'ชื่อ Oshi',
@@ -418,7 +436,7 @@ const I18N = {
     previewTitle:    'Preview PNG',
     previewDownload: 'Download PNG',
     previewCancel:   'กลับไปแก้ไข',
-    previewMeta:     (theme,scale,w,h) => `${theme} · ×${scale} · ${w}×${h}px`,
+    previewMeta:     (theme,sizeLabel,w,h) => `${theme} · ${sizeLabel} · ${w}×${h}px`,
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `ต้องการลบรูปทั้งหมด ${n} รูป?\n(ข้อมูลที่บันทึกไว้จะถูกลบด้วย)`,
     confirmDelTier:   n  => `ลบ tier นี้? รูป ${n} รูปจะกลับไปที่ pool`,
@@ -486,6 +504,12 @@ const I18N = {
     sizePillNormal:  'Normal',
     sizePillLarge:   'Large ×2',
     sizePillXL:      'XL ×3',
+    platformLabel:   'Platform size :',
+    platformPillNone:    'None (use size above)',
+    platformPillIgPost:  'IG Post 1:1',
+    platformPillIgStory: 'IG Story 9:16',
+    platformPillFbPost:  'FB Post',
+    platformPillXPost:   'X Post 16:9',
     displayOptionsLabel: 'Show names :',
     showTierNameText: 'Tier name',
     showOshiNameText: 'Oshi name',
@@ -498,7 +522,7 @@ const I18N = {
     previewTitle:    'PNG Preview',
     previewDownload: 'Download PNG',
     previewCancel:   'Keep editing',
-    previewMeta:     (theme,scale,w,h) => `${theme} · ×${scale} · ${w}×${h}px`,
+    previewMeta:     (theme,sizeLabel,w,h) => `${theme} · ${sizeLabel} · ${w}×${h}px`,
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `Delete all ${n} photo(s)?\n(Saved data will also be cleared)`,
     confirmDelTier:   n  => `Delete this tier? ${n} photo(s) will return to pool`,
@@ -566,6 +590,12 @@ const I18N = {
     sizePillNormal:  '通常',
     sizePillLarge:   '大 ×2',
     sizePillXL:      '特大 ×3',
+    platformLabel:   'プラットフォームサイズ :',
+    platformPillNone:    'なし（上のサイズを使用）',
+    platformPillIgPost:  'IG 投稿 1:1',
+    platformPillIgStory: 'IG ストーリー 9:16',
+    platformPillFbPost:  'FB 投稿',
+    platformPillXPost:   'X 投稿 16:9',
     displayOptionsLabel: '名前表示 :',
     showTierNameText: 'Tier 名',
     showOshiNameText: 'Oshi 名',
@@ -578,7 +608,7 @@ const I18N = {
     previewTitle:    'PNG プレビュー',
     previewDownload: 'PNG を保存',
     previewCancel:   '編集に戻る',
-    previewMeta:     (theme,scale,w,h) => `${theme} · ×${scale} · ${w}×${h}px`,
+    previewMeta:     (theme,sizeLabel,w,h) => `${theme} · ${sizeLabel} · ${w}×${h}px`,
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `全ての画像 ${n} 枚を削除しますか？\n(保存データも削除されます)`,
     confirmDelTier:   n  => `この Tier を削除しますか？${n} 枚の画像が pool に戻ります`,
@@ -616,7 +646,7 @@ const HELP = {
     { h:'👤 Oshi Profile', li:['กด <span class="help-kbd">✎</span> บนรูปเพื่อตั้งชื่อ oshi — ชื่อจะแสดงบนรูปตลอดเวลา','กด <span class="help-kbd">📷</span> เพื่ออัพเดทรูปใหม่ — <strong>ตำแหน่งใน tier ยังคงอยู่เดิม</strong>','ตั้งชื่อครั้งเดียว แล้วเปลี่ยนรูปได้เรื่อยๆ โดยไม่ต้องลากใหม่'], tip:'💡 คลิกที่ชื่อบนรูปโดยตรงก็สามารถแก้ชื่อได้เช่นกัน' },
     { h:'🖱️ จัดรูปลง Tier', li:['ลากรูปจาก pool ด้านบนลงใน tier ที่ต้องการ','ลากย้ายระหว่าง tier ได้อิสระ หรือลากกลับ pool','รองรับการลากด้วยนิ้วบนมือถือ/แท็บเล็ตเช่นเดียวกับเมาส์','กด <span class="help-kbd">×</span> บนรูปเพื่อลบออก','กด <span class="help-kbd">🔒</span> บนรูปเพื่อล็อค — กันไม่ให้รูปนั้นถูกลากออกจากตำแหน่ง'] },
     { h:'✏️ จัดการ Tier', li:['<strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก','<strong>คลิกพื้นหลังสี</strong> → เลือกจาก 8 สี preset หรือกำหนดสีเองได้','ลากไอคอน <span class="help-kbd">⠿</span> เพื่อสลับลำดับ tier ได้ตามต้องการ','ปุ่ม <span class="help-kbd">🔒</span> เพื่อล็อค tier — กันลากรูปเข้า/ออกและกันสลับลำดับ (แก้ชื่อ/สี/ลบยังทำได้ตามปกติ)','ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier','เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ','ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่'] },
-    { h:'🎨 สร้างภาพ PNG', li:['เลือก <strong>รูปต่อแถว</strong> (3–8)','เลือก <strong>ธีม</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom','ธีม <strong>Custom</strong> ให้เลือกสีพื้นหลังเองได้อิสระ พร้อมสี preset ให้กดเลือกเร็วๆ ได้','เลือก <strong>ขนาด</strong>: Normal · Large ×2 · XL ×3','ติ๊ก/ปลดติ๊ก <strong>แสดงชื่อ Tier</strong> และ <strong>แสดงชื่อ Oshi</strong> เพื่อเลือกว่าจะให้ภาพ export มีชื่อหรือไม่','กด "สร้างภาพ PNG" → ดู Preview ก่อน แล้วกด Download PNG','Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ'], tip:'💡 ธีมที่แสดงชื่อ oshi บนภาพ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
+    { h:'🎨 สร้างภาพ PNG', li:['เลือก <strong>รูปต่อแถว</strong> (3–8)','เลือก <strong>ธีม</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom','ธีม <strong>Custom</strong> ให้เลือกสีพื้นหลังเองได้อิสระ พร้อมสี preset ให้กดเลือกเร็วๆ ได้','เลือก <strong>ขนาด</strong>: Normal · Large ×2 · XL ×3','เลือก <strong>ขนาดตาม Platform</strong> (IG Post 1:1 · IG Story 9:16 · FB Post · X Post 16:9) เพื่อ export เป็นขนาดตายตัวสำหรับแพลตฟอร์มนั้นๆ — จะเติมพื้นหลังรอบภาพให้พอดี ratio และแทนที่ตัวเลือก <strong>ขนาด</strong> ด้านบนชั่วคราว','ติ๊ก/ปลดติ๊ก <strong>แสดงชื่อ Tier</strong> และ <strong>แสดงชื่อ Oshi</strong> เพื่อเลือกว่าจะให้ภาพ export มีชื่อหรือไม่','กด "สร้างภาพ PNG" → ดู Preview ก่อน แล้วกด Download PNG','Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ'], tip:'💡 ธีมที่แสดงชื่อ oshi บนภาพ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
     { h:'📦 Export / Import', li:['<strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip','<strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น','Export/Import รวม Version history ที่บันทึกไว้ (สูงสุด 10 อัน) ไปด้วย'], tip:'💡 ควร Export ไว้สำรองก่อนเปลี่ยนเครื่องหรือล้างข้อมูล' },
     { h:'💾 บันทึกอัตโนมัติ', li:['ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ','Undo / Redo ย้อนหลังได้ 10 ลำดับ','กด "บันทึก Version" เพื่อเก็บ snapshot ด้วยตนเอง — เก็บ 10 อันล่าสุดไว้ restore ได้','เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม','กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่'] },
   ]},
@@ -625,7 +655,7 @@ const HELP = {
     { h:'👤 Oshi Profile', li:['Click <span class="help-kbd">✎</span> on a photo to set the oshi\'s name — shown on the card at all times','Click <span class="help-kbd">📷</span> to update the photo — <strong>tier position is preserved</strong>','Name your oshi once, then swap photos anytime without re-dragging'], tip:'💡 You can also click the name text directly on the card to rename' },
     { h:'🖱️ Arrange Photos', li:['Drag photos from the pool above into any tier','Freely move photos between tiers or back to pool','Touch drag works the same as mouse drag on phones/tablets','Press <span class="help-kbd">×</span> on a photo to remove it','Press <span class="help-kbd">🔒</span> on a photo to lock it — prevents that photo from being dragged'] },
     { h:'✏️ Manage Tiers', li:['<strong>Click tier name</strong> → type new name → press <span class="help-kbd">Enter</span> or click away','<strong>Click color background</strong> → choose from 8 preset colors or pick a custom color','Drag the <span class="help-kbd">⠿</span> handle to reorder tiers','Press <span class="help-kbd">🔒</span> to lock a tier — blocks dragging photos in/out and reordering it (rename/color/delete still work)','<span class="help-kbd">×</span> button top-right (hover to show) → delete tier','Photos in a deleted tier return to pool automatically','<strong>＋ Add tier</strong> button → create a new tier'] },
-    { h:'🎨 Export PNG', li:['Choose <strong>photos per row</strong> (3–8)','Choose a <strong>theme</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom','The <strong>Custom</strong> theme lets you pick your own background color, with quick preset swatches too','Choose <strong>size</strong>: Normal · Large ×2 · XL ×3','Toggle <strong>Tier name</strong> and <strong>Oshi name</strong> to control whether names appear in the exported image','Click "Export PNG" → preview first, then click Download PNG','Empty tiers are excluded from the image'], tip:'💡 Themes that show oshi names in the image: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
+    { h:'🎨 Export PNG', li:['Choose <strong>photos per row</strong> (3–8)','Choose a <strong>theme</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom','The <strong>Custom</strong> theme lets you pick your own background color, with quick preset swatches too','Choose <strong>size</strong>: Normal · Large ×2 · XL ×3','Choose a <strong>Platform size</strong> (IG Post 1:1 · IG Story 9:16 · FB Post · X Post 16:9) to export at a fixed platform resolution — the tier list is padded to fit the ratio, temporarily overriding the <strong>Size</strong> option above','Toggle <strong>Tier name</strong> and <strong>Oshi name</strong> to control whether names appear in the exported image','Click "Export PNG" → preview first, then click Download PNG','Empty tiers are excluded from the image'], tip:'💡 Themes that show oshi names in the image: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
     { h:'📦 Export / Import', li:['<strong>Export</strong> → save all photos and tier layout as a .zip file','<strong>Import</strong> → restore a .zip to recover or transfer data','Export/Import also includes your saved Version history (up to 10 snapshots)'], tip:'💡 Export regularly before switching devices or clearing data' },
     { h:'💾 Auto-save', li:['Every change is saved automatically','Undo / Redo keeps the last 10 steps','Click "Save Version" to store a manual snapshot — keeps the latest 10 for restore','Refresh or reopen — tiers and photo positions are fully restored','Use "Clear all" to reset and start over'] },
   ]},
@@ -634,7 +664,7 @@ const HELP = {
     { h:'👤 Oshi Profile', li:['<span class="help-kbd">✎</span> ボタンで名前を設定 — カードに常時表示されます','<span class="help-kbd">📷</span> ボタンで写真を更新 — <strong>Tier の位置はそのまま維持</strong>','一度名前をつけたら、何度でも写真だけ交換可能'], tip:'💡 カード上の名前テキストをクリックして直接編集することもできます' },
     { h:'🖱️ Tier に配置', li:['上の pool から Tier にドラッグ','Tier 間や pool へ自由に移動可能','スマホ・タブレットでも指でドラッグ操作が可能','<span class="help-kbd">×</span> ボタンで画像を削除','<span class="help-kbd">🔒</span> ボタンで画像をロック — その画像はドラッグできなくなります'] },
     { h:'✏️ Tier を管理', li:['<strong>Tier 名をクリック</strong> → 新しい名前を入力 → <span class="help-kbd">Enter</span> またはクリックで確定','<strong>背景色をクリック</strong> → 8色のプリセットまたはカスタムカラーから選択','<span class="help-kbd">⠿</span> ハンドルをドラッグして Tier の順番を変更','<span class="help-kbd">🔒</span> ボタンで Tier をロック — 画像のドラッグ入出と並び替えを防止（名前変更・色変更・削除は引き続き可能）','右上の <span class="help-kbd">×</span>（ホバーで表示）→ Tier を削除','削除した Tier の画像は pool に戻ります','<strong>＋ Tier を追加</strong>ボタン → 新しい Tier を追加'] },
-    { h:'🎨 PNG 出力', li:['<strong>1行の枚数</strong>（3〜8）を選択','<strong>テーマ</strong>を選択: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom','<strong>Custom</strong> テーマでは背景色を自由に選択できます（プリセットからも選択可）','<strong>サイズ</strong>を選択: 通常 · 大 ×2 · 特大 ×3','<strong>Tier 名</strong>と<strong>Oshi 名</strong>のチェックで、出力画像に名前を表示するか選択できます','「PNG を出力」をクリック → プレビュー後に PNG を保存','空の Tier は画像に含まれません'], tip:'💡 推しの名前が画像に表示されるテーマ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
+    { h:'🎨 PNG 出力', li:['<strong>1行の枚数</strong>（3〜8）を選択','<strong>テーマ</strong>を選択: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom','<strong>Custom</strong> テーマでは背景色を自由に選択できます（プリセットからも選択可）','<strong>サイズ</strong>を選択: 通常 · 大 ×2 · 特大 ×3','<strong>プラットフォームサイズ</strong>（IG 投稿 1:1 · IG ストーリー 9:16 · FB 投稿 · X 投稿 16:9）を選択すると、そのプラットフォーム向けの固定サイズで出力されます — 比率に合わせて余白が追加され、上の<strong>サイズ</strong>設定は一時的に無効になります','<strong>Tier 名</strong>と<strong>Oshi 名</strong>のチェックで、出力画像に名前を表示するか選択できます','「PNG を出力」をクリック → プレビュー後に PNG を保存','空の Tier は画像に含まれません'], tip:'💡 推しの名前が画像に表示されるテーマ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
     { h:'📦 エクスポート / インポート', li:['<strong>エクスポート</strong> → 全画像と Tier 設定を .zip に保存','<strong>インポート</strong> → .zip を読み込んでデータを復元・転送','保存済みの Version history（最大10件）もエクスポート/インポートに含まれます'], tip:'💡 デバイス変更やデータ削除の前に定期的にエクスポートしてください' },
     { h:'💾 自動保存', li:['全ての変更は自動的に保存されます','Undo / Redo は直近 10 手順まで保持します','「バージョンを保存」ボタンで手動スナップショットを保存 — 最新 10 件まで保持','更新・再オープン後も Tier と画像の位置が復元されます','「全て削除」でリセットして最初からやり直せます'] },
   ]},
@@ -677,6 +707,12 @@ function applyLang() {
     document.getElementById('sz1-label').textContent     = t('sizePillNormal');
     document.getElementById('sz2-label').textContent     = t('sizePillLarge');
     document.getElementById('sz3-label').textContent     = t('sizePillXL');
+    document.getElementById('platform-label').textContent = t('platformLabel');
+    document.getElementById('pf0-label').textContent     = t('platformPillNone');
+    document.getElementById('pf1-label').textContent     = t('platformPillIgPost');
+    document.getElementById('pf2-label').textContent     = t('platformPillIgStory');
+    document.getElementById('pf3-label').textContent     = t('platformPillFbPost');
+    document.getElementById('pf4-label').textContent     = t('platformPillXPost');
     document.getElementById('display-options-label').textContent = t('displayOptionsLabel');
     document.getElementById('chk-tier-name-text').textContent    = t('showTierNameText');
     document.getElementById('chk-oshi-name-text').textContent    = t('showOshiNameText');
@@ -711,6 +747,8 @@ const VERSION_LIMIT = 10;
 const PALETTE       = ['#F08080','#FFB347','#FFE566','#90EE90','#87CEEB','#DDA0DD','#FFB6C1','#98D8C8'];
 const DEFAULT_TIERS = [{ id:'kami', name:'Kami', color:'#F08080' }, { id:'oshi', name:'Oshi', color:'#FFB347' }];
 const CANVAS_CFG    = { LW:140, PW:110, PH:145, G:4 };
+const THEME_BG        = { dark:'#0d0d1a', gradient:'#111111', neon:'#000000', mono:'#1a1a1a', polaroid:'#f5f0eb', pastel:'#f4f4f4' };
+const PLATFORM_PRESETS = { 'ig-post':{w:1080,h:1080}, 'ig-story':{w:1080,h:1920}, 'fb-post':{w:1200,h:630}, 'x-post':{w:1600,h:900} };
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let tiersConfig = DEFAULT_TIERS.map(x => ({ ...x }));
@@ -755,8 +793,9 @@ function init() {
         if (e.target.files[0]) onImport(e.target.files[0]);
         e.target.value = '';
     });
-    document.querySelectorAll('input[name="perrow"],input[name="theme"],input[name="size"]').forEach(r => r.addEventListener('change', saveState));
+    document.querySelectorAll('input[name="perrow"],input[name="theme"],input[name="size"],input[name="platform"]').forEach(r => r.addEventListener('change', saveState));
     document.querySelectorAll('input[name="theme"]').forEach(r => r.addEventListener('change', syncCustomBgVisibility));
+    document.querySelectorAll('input[name="platform"]').forEach(r => r.addEventListener('change', syncSizeVisibility));
     document.getElementById('custom-bg-input')?.addEventListener('change', saveState);
     document.getElementById('chk-show-tier-name')?.addEventListener('change', saveState);
     document.getElementById('chk-show-oshi-name')?.addEventListener('change', saveState);
@@ -764,6 +803,7 @@ function init() {
     document.addEventListener('click', () => closeColorPicker());
     if (!restoreState()) { tiersConfig.forEach(renderTierRow); saveState({ history:false }); }
     syncCustomBgVisibility();
+    syncSizeVisibility();
     updateHistoryControls();
 
     const helpBackdrop = document.getElementById('help-backdrop');
@@ -1153,6 +1193,12 @@ function syncCustomBgVisibility() {
     const group = document.getElementById('custom-bg-group');
     if(group) group.style.display = getCheckedValue('theme','flat')==='custom' ? 'flex' : 'none';
 }
+function syncSizeVisibility() {
+    const active = getCheckedValue('platform','none') !== 'none';
+    const group = document.getElementById('size-group');
+    if(group) group.style.opacity = active ? '0.45' : '1';
+    document.querySelectorAll('input[name="size"]').forEach(el => el.disabled = active);
+}
 function renderCustomBgPresets() {
     const wrap = document.getElementById('custom-bg-presets');
     if(!wrap) return;
@@ -1177,6 +1223,7 @@ function buildCurrentState(savedAt=Date.now()) {
         perRow: parseInt(getCheckedValue('perrow','6'),10),
         theme: getCheckedValue('theme','flat'),
         scale: parseInt(getCheckedValue('size','1'),10),
+        platformPreset: getCheckedValue('platform','none'),
         customBg: document.getElementById('custom-bg-input')?.value ?? '#ffffff',
         showTierName: document.getElementById('chk-show-tier-name')?.checked ?? true,
         showOshiName: document.getElementById('chk-show-oshi-name')?.checked ?? true,
@@ -1212,6 +1259,7 @@ function normalizeState(raw) {
     state.perRow = parseInt(state.perRow ?? 6, 10);
     state.theme = state.theme ?? 'flat';
     state.scale = parseInt(state.scale ?? 1, 10);
+    state.platformPreset = Object.keys(PLATFORM_PRESETS).includes(state.platformPreset) ? state.platformPreset : 'none';
     state.customBg = /^#[0-9a-fA-F]{6}$/.test(state.customBg) ? state.customBg : '#ffffff';
     state.showTierName = state.showTierName ?? true;
     state.showOshiName = state.showOshiName ?? true;
@@ -1305,9 +1353,11 @@ function applyState(rawState, opts={}) {
     setCheckedValue('perrow', String(state.perRow));
     setCheckedValue('theme', state.theme);
     setCheckedValue('size', String(state.scale));
+    setCheckedValue('platform', state.platformPreset);
     const customBgInput = document.getElementById('custom-bg-input');
     if (customBgInput) customBgInput.value = state.customBg;
     syncCustomBgVisibility();
+    syncSizeVisibility();
     const chkTierName = document.getElementById('chk-show-tier-name');
     if (chkTierName) chkTierName.checked = state.showTierName;
     const chkOshiName = document.getElementById('chk-show-oshi-name');
@@ -1369,6 +1419,7 @@ function onClearAll() {
 async function onGenerate() {
     const theme = document.querySelector('input[name="theme"]:checked')?.value ?? 'flat';
     const scale = parseInt(document.querySelector('input[name="size"]:checked')?.value ?? '1', 10);
+    const platform = document.querySelector('input[name="platform"]:checked')?.value ?? 'none';
     const customBg = document.getElementById('custom-bg-input')?.value ?? '#ffffff';
     const showTierName = document.getElementById('chk-show-tier-name')?.checked ?? true;
     const showOshiName = document.getElementById('chk-show-oshi-name')?.checked ?? true;
@@ -1385,21 +1436,25 @@ async function onGenerate() {
     showOverlay(t('ovGenerating'));
     document.getElementById('btn-generate').disabled = true;
     try {
-        const canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn), theme, scale, customBg, showTierName, showOshiName);
+        const preset = PLATFORM_PRESETS[platform];
+        const effScale = preset ? fitScaleForPreset(tiers, perRow, preset) : scale;
+        let canvas = await buildTierCanvas(tiers, perRow, fn => Promise.resolve('uploads/'+fn), theme, effScale, customBg, showTierName, showOshiName);
+        if(preset) canvas = fitCanvasToPreset(canvas, preset, theme, customBg);
         const blob   = await canvasToBlob(canvas);
         const fn={flat:'oshi-tier.png',dark:'oshi-tier-dark.png',polaroid:'oshi-tier-polaroid.png',gradient:'oshi-tier-gradient.png',neon:'oshi-tier-neon.png',pastel:'oshi-tier-pastel.png',mono:'oshi-tier-mono.png',custom:'oshi-tier-custom.png'};
-        const sfx={1:'',2:'_2x',3:'_3x'}[scale]??'';
-        openPreview(blob, (fn[theme]??'oshi-tier.png').replace('.png', sfx+'.png'), theme, scale, canvas.width, canvas.height);
+        const sfx = preset ? '_'+platform : ({1:'',2:'_2x',3:'_3x'}[scale]??'');
+        const sizeLabel = preset ? t('platformPill'+({'ig-post':'IgPost','ig-story':'IgStory','fb-post':'FbPost','x-post':'XPost'}[platform])) : `×${scale}`;
+        openPreview(blob, (fn[theme]??'oshi-tier.png').replace('.png', sfx+'.png'), theme, sizeLabel, canvas.width, canvas.height);
     } catch(e) { showToast(t('toastGenFail', e.message)); }
     finally { hideOverlay(); document.getElementById('btn-generate').disabled = false; }
 }
-function openPreview(blob, filename, theme, scale, width, height) {
+function openPreview(blob, filename, theme, sizeLabel, width, height) {
     closePreview();
     previewBlob = blob;
     previewFilename = filename;
     previewUrl = URL.createObjectURL(blob);
     document.getElementById('preview-img').src = previewUrl;
-    document.getElementById('preview-meta').textContent = t('previewMeta', theme, scale, width, height);
+    document.getElementById('preview-meta').textContent = t('previewMeta', theme, sizeLabel, width, height);
     document.getElementById('preview-backdrop').classList.add('open');
 }
 function closePreview() {
@@ -1495,18 +1550,38 @@ function mimeFromExt(name) {
 }
 
 // ── Canvas generation ─────────────────────────────────────────────────────────
-async function buildTierCanvas(tiers, perRow, getSrc, theme='flat', scale=1, customBg=null, showTierName=true, showOshiName=true) {
+function measureTierCanvas(tiers, perRow) {
     const {LW,PW,PH,G} = CANVAS_CFG;
     const th = n => Math.max(1,Math.ceil(n/perRow))*PH+(Math.max(1,Math.ceil(n/perRow))+1)*G;
     const W  = LW+perRow*PW+(perRow+1)*G;
     const H  = tiers.reduce((s,x)=>s+th(x.items.length),0);
+    return {W,H};
+}
+// Largest scale at which the native tier-list content still fits inside a fixed-size platform frame
+function fitScaleForPreset(tiers, perRow, preset) {
+    const {W,H} = measureTierCanvas(tiers, perRow);
+    return Math.min(preset.w/W, preset.h/H);
+}
+// Centers already-fitted content on a fixed-size platform canvas, padding with the theme's background color
+function fitCanvasToPreset(canvas, preset, theme, customBg) {
+    const out = document.createElement('canvas');
+    out.width = preset.w; out.height = preset.h;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = theme==='custom' ? (customBg||'#ffffff') : (THEME_BG[theme] ?? '#ffffff');
+    ctx.fillRect(0,0,preset.w,preset.h);
+    ctx.drawImage(canvas, Math.round((preset.w-canvas.width)/2), Math.round((preset.h-canvas.height)/2));
+    return out;
+}
+async function buildTierCanvas(tiers, perRow, getSrc, theme='flat', scale=1, customBg=null, showTierName=true, showOshiName=true) {
+    const {LW,PW,PH,G} = CANVAS_CFG;
+    const th = n => Math.max(1,Math.ceil(n/perRow))*PH+(Math.max(1,Math.ceil(n/perRow))+1)*G;
+    const {W,H} = measureTierCanvas(tiers, perRow);
     const canvas = document.createElement('canvas'); canvas.width=W*scale; canvas.height=H*scale;
     const ctx = canvas.getContext('2d');
     if(scale!==1) ctx.scale(scale,scale);
 
-    const BG={dark:'#0d0d1a',gradient:'#111111',neon:'#000000',mono:'#1a1a1a',polaroid:'#f5f0eb',pastel:'#f4f4f4'};
     if(theme==='custom' && customBg){ ctx.fillStyle=customBg; ctx.fillRect(0,0,W,H); }
-    else if(BG[theme]){ ctx.fillStyle=BG[theme]; ctx.fillRect(0,0,W,H); }
+    else if(THEME_BG[theme]){ ctx.fillStyle=THEME_BG[theme]; ctx.fillRect(0,0,W,H); }
 
     let y=0;
     for(const tier of tiers) {

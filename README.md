@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.9.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
+**Version 0.10.0** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -46,6 +46,7 @@
 - เลือกจำนวน **รูปต่อแถว** (3–8)
 - เลือก **ธีม** 8 แบบ: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom (กำหนดสีพื้นหลังเอง)
 - เลือก **ขนาด**: Normal (×1) · Large (×2) · XL (×3)
+- **Preset ขนาดตาม Platform** — IG Post 1:1 (1080×1080) · IG Story 9:16 (1080×1920) · FB Post (1200×630) · X Post 16:9 (1600×900) — export เป็นขนาดตายตัว เติมพื้นหลังรอบภาพให้พอดี ratio, override ตัวเลือก **ขนาด** ด้านบนชั่วคราว
 - **ควบคุมการแสดงชื่อ** — ติ๊ก/ปลดติ๊กแยกกันได้ระหว่าง **ชื่อ Tier** และ **ชื่อ Oshi** ก่อน export
 - สร้างภาพด้วย Canvas API ใน browser — ไม่ต้องพึ่ง server
 - ชื่อไฟล์สะท้อน theme และ size: `oshi-tier-dark_2x.png`
@@ -364,6 +365,7 @@ oshi-tier-export.zip
 | Gap | 4 px |
 | Canvas width (×1) | `140 + perRow × 110 + (perRow+1) × 4` px |
 | Scale | ×1 (Normal) · ×2 (Large) · ×3 (XL) — ผ่าน `ctx.scale()` |
+| Platform preset | IG Post 1080×1080 · IG Story 1080×1920 · FB Post 1200×630 · X Post 1600×900 — content ถูก scale ให้พอดีแล้ว pad พื้นหลังให้ตรง ratio |
 | Themes | 8 themes — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom |
 | Oshi name in PNG | แสดงใน Dark UI · Gradient · Neon · Pastel · Polaroid · Mono (ถ้าตั้งชื่อไว้) |
 | Tier color | กำหนดจาก UI — 8 สีให้เลือก |
@@ -438,7 +440,13 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 
 ## Changelog
 
-### 0.9.0rc1 — 2026-07-01
+### 0.10.0 — 2026-07-02
+- **Preset ขนาด canvas ตาม platform** — เลือก IG Post 1:1 · IG Story 9:16 · FB Post · X Post 16:9 เพื่อ export เป็นขนาดตายตัวสำหรับแพลตฟอร์มนั้นๆ
+- Content ถูก render ที่ scale พอดีที่สุดสำหรับ ratio เป้าหมาย แล้ว pad พื้นหลัง (สีตาม theme หรือ custom background) รอบภาพให้ตรงขนาด — ไม่ครอปหรือยืดภาพ
+- ตัวเลือกนี้ override ตัวเลือก **ขนาด** (×1/×2/×3) เดิมชั่วคราวเมื่อเลือก preset ที่ไม่ใช่ "ไม่ใช้"
+- รองรับ TH/EN/JP ครบ
+
+### 0.9.0 — 2026-07-01
 - **Custom Background theme** — theme ที่ 8 นอกเหนือจาก 7 theme เดิม เลือกสีพื้นหลังของภาพ export ได้อิสระผ่าน color picker พร้อมสี preset 8 สีให้กดเลือกเร็วๆ
 - **Tier color picker กำหนดสีเองได้** — นอกจาก 8 สี preset เดิม เพิ่ม color picker ให้กำหนดสี tier เองได้อิสระ
 - **Tier drag-reorder** — ลากไอคอน ⠿ ที่มุมซ้ายบนของแต่ละ tier (แสดงเมื่อ hover) เพื่อสลับลำดับ tier
@@ -447,20 +455,20 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 - **ควบคุมการแสดงชื่อตอน export** — checkbox แยกกัน 2 อันสำหรับ "แสดงชื่อ Tier" และ "แสดงชื่อ Oshi" ปิดได้อิสระต่อกัน
 - รองรับ TH/EN/JP ครบทุก feature
 
-### 0.8.0rc1 — 2026-07-01
+### 0.8.0 — 2026-07-01
 - **Undo / Redo** — ย้อนกลับ/ย้อนไปข้างหน้าได้ 10 ลำดับล่าสุด ปุ่ม ↶ ↷ ข้าง save-status, คีย์ลัด `Ctrl/Cmd+Z` และ `Ctrl/Cmd+Shift+Z` (หรือ `Ctrl/Cmd+Y`)
 - **Version history** — กด "บันทึก Version" เพื่อเก็บ snapshot ปัจจุบันด้วยตนเอง (เก็บล่าสุด 10 อันใน `localStorage`) เลือกจาก dropdown แล้วกด Restore เพื่อย้อนกลับไปยัง state นั้น
 - Version history ถูกรวมเข้าไปใน Export/Import ZIP ด้วย (`versions.json`) — ฝั่ง PHP จะ remap `oshi.photo` ของทุก version ให้ตรงกับ filename ใหม่หลัง re-upload อัตโนมัติ
 - **PNG Preview modal** — กด "สร้างภาพ PNG" แล้วขึ้น preview ก่อน ตรวจสอบภาพแล้วค่อยกด Download PNG หรือกลับไปแก้ไข
 - รองรับ TH/EN/JP ครบทั้ง 3 feature
 
-### 0.7.0rc1 — 2026-06-25
+### 0.7.0 — 2026-06-25
 - **PNG Size selector** — เลือกขนาด output ก่อน export: Normal (×1) · Large (×2) · XL (×3)
 - ใช้ `ctx.scale()` — ทุก theme ได้ขนาดที่เลือกโดยอัตโนมัติ ไม่มีโค้ดซ้ำ
 - ชื่อไฟล์ดาวน์โหลดระบุ scale: `oshi-tier_2x.png`, `oshi-tier-dark_3x.png` ฯลฯ
 - รองรับ TH/EN/JP
 
-### 0.6.0rc1 — 2026-06-25
+### 0.6.0 — 2026-06-25
 - **7 Export Themes** — เลือก theme ก่อน export PNG: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
 - Theme selector แสดงใต้ perrow selector, รองรับ TH/EN/JP
 - ชื่อไฟล์ดาวน์โหลดตาม theme: `oshi-tier-neon.png`, `oshi-tier-polaroid.png` ฯลฯ
@@ -470,7 +478,7 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 - Pastel: lightened tier color label, rounded cards + soft drop shadow, ชื่อ oshi ใต้รูป
 - Mono: grayscale photos, grayscale label + colored accent dot, dark background
 
-### 0.5.0rc1 — 2026-06-25
+### 0.5.0 — 2026-06-25
 - **Oshi Profile** — แต่ละรูปเป็น oshi entity ที่มี `id` คงที่, ตั้งชื่อได้, และเปลี่ยนรูปได้โดยไม่ขยับตำแหน่งใน tier
 - ปุ่ม **✎** (hover บนรูป) — ตั้ง/แก้ชื่อ oshi แบบ inline
 - ปุ่ม **📷** (hover บนรูป) — อัพเดทรูปใหม่ผ่าน file picker, oshi ยังอยู่ tier เดิม
@@ -479,7 +487,7 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 - Migration อัตโนมัติ: state/ZIP รูปแบบเก่าอ่านได้ทันที ไม่ต้อง import ใหม่
 - Footer แสดง version และ link ไป GitHub repository
 
-### 0.4.0rc1 — 2026-06-25
+### 0.4.0 — 2026-06-25
 - รองรับ 3 ภาษา: **TH / EN / JP** — ครอบคลุม UI labels, toast, confirm dialogs, overlay, help modal
 - Language switcher ปุ่ม TH/EN/JP ใต้ header — บันทึกใน localStorage ข้าม session
 - `I18N` object + `t()` function สำหรับ dynamic translation ทุก string
@@ -487,7 +495,7 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 - Time format ปรับตาม locale: `th-TH` / `en-US` / `ja-JP`
 - Font stack เพิ่ม Hiragino Sans (JP) และ Noto Sans Thai (TH)
 
-### 0.3.0rc1 — 2026-06-25
+### 0.3.0 — 2026-06-25
 - **แยกเป็น 2 version**: PHP (`php/`) และ Static (`cf/`) ใน project เดียว
 - **ย้าย image generation จาก PHP GD → Canvas API** (client-side, ทั้งสอง version)
 - **ลบ GD dependency** ออกทั้งหมด — PHP version ต้องการแค่ PHP 8.2 + web server
@@ -496,12 +504,12 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 - **Quota check 50 MB** พร้อม progress bar (static version)
 - **คู่มือการใช้งาน in-app** — help banner + modal ครอบคลุมทุก feature
 
-### 0.2.0rc1 — 2026-06-25
+### 0.2.0 — 2026-06-25
 - เพิ่ม / ลบ tier ได้ไม่จำกัด
 - แก้ไขชื่อ tier แบบ inline
 - เปลี่ยนสี tier ผ่าน color picker
 - localStorage schema เปลี่ยนเป็น `tiers[]` พร้อม migration จาก v0.1
 
-### 0.1.0rc1 — 2026-06-25
+### 0.1.0 — 2026-06-25
 - Initial release candidate
 - Upload + PHP GD generate + Auto-save localStorage
