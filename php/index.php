@@ -97,6 +97,9 @@ header p { color:#666; font-size:14px; margin-bottom:12px; }
 /* ── Buttons ── */
 .btn-sm { background:transparent; border:1px solid #2e2e4a; color:#666; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; transition:all .2s; white-space:nowrap; }
 .btn-sm:hover { border-color:#ff8c8c; color:#ff8c8c; }
+.btn-sm:disabled { opacity:.35; cursor:not-allowed; border-color:#2e2e4a; color:#555; }
+.version-select { height:27px; max-width:160px; background:#0d0d1a; border:1px solid #2e2e4a; border-radius:6px; color:#777; padding:3px 8px; font-size:12px; outline:none; }
+.version-select:focus { border-color:#ffb347; color:#aaa; }
 .btn-generate { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:16px; background:linear-gradient(135deg,#ff8c8c 0%,#ffb347 100%); border:none; border-radius:12px; color:#fff; font-size:18px; font-weight:700; cursor:pointer; margin-top:24px; transition:opacity .2s,transform .1s; letter-spacing:.3px; }
 .btn-generate:hover { opacity:.9; transform:translateY(-1px); }
 .btn-generate:active { transform:translateY(0); }
@@ -163,6 +166,20 @@ footer a:hover { color:#ffb347; }
 .help-section li strong { color:#ccc; font-weight:600; }
 .help-kbd { display:inline-block; background:#1e1e38; border:1px solid #2e2e4a; border-radius:4px; padding:0 5px; font-size:11px; color:#aaa; font-family:monospace; line-height:1.6; }
 .help-tip { margin-top:10px; padding:8px 12px; background:rgba(255,179,71,.07); border:1px solid rgba(255,179,71,.2); border-radius:8px; font-size:12px; color:#888; }
+
+/* ── PNG preview modal ── */
+.preview-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:820; align-items:center; justify-content:center; padding:16px; }
+.preview-backdrop.open { display:flex; }
+.preview-modal { width:min(920px,100%); max-height:88vh; background:#13132b; border:1px solid #2e2e4a; border-radius:14px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 18px 60px rgba(0,0,0,.55); }
+.preview-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:16px 18px; border-bottom:1px solid #1e1e38; }
+.preview-head h2 { font-size:17px; line-height:1.3; color:#eee; margin-bottom:4px; }
+.preview-head p { font-size:12px; color:#666; }
+.preview-close { width:30px; height:30px; border-radius:7px; background:transparent; border:1px solid #2e2e4a; color:#666; font-size:18px; cursor:pointer; line-height:1; flex-shrink:0; }
+.preview-close:hover { border-color:#ff8c8c; color:#ff8c8c; }
+.preview-canvas-wrap { flex:1; overflow:auto; padding:18px; background:#0d0d1a; display:flex; align-items:flex-start; justify-content:center; }
+.preview-canvas-wrap img { max-width:100%; height:auto; border-radius:6px; box-shadow:0 10px 40px rgba(0,0,0,.45); }
+.preview-actions { display:flex; justify-content:flex-end; gap:10px; padding:14px 18px; border-top:1px solid #1e1e38; }
+.btn-preview-download { background:linear-gradient(135deg,#ff8c8c,#ffb347); border:none; color:#fff; font-weight:700; }
 </style>
 </head>
 <body>
@@ -202,6 +219,11 @@ footer a:hover { color:#ffb347; }
             <span id="pool-label" class="section-label"></span>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <span id="save-status" class="save-status"></span>
+                <button id="btn-undo" class="btn-sm" type="button" disabled></button>
+                <button id="btn-redo" class="btn-sm" type="button" disabled></button>
+                <button id="btn-save-version" class="btn-sm" type="button"></button>
+                <select id="version-select" class="version-select"></select>
+                <button id="btn-restore-version" class="btn-sm" type="button" disabled></button>
                 <button id="btn-export" class="btn-sm">📦 Export</button>
                 <label class="btn-sm" style="cursor:pointer;"><span id="import-label-text"></span><input type="file" id="import-input" accept=".zip" style="display:none"></label>
                 <button id="btn-clear-all" class="btn-sm"></button>
@@ -265,13 +287,31 @@ footer a:hover { color:#ffb347; }
 
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
-<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.7.0rc1 · GitHub ↗</a></footer>
+<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.8.0rc1 · GitHub ↗</a></footer>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">
 <div class="help-modal">
     <button id="help-close" class="help-close">×</button>
     <div id="help-content"></div>
+</div>
+</div>
+
+<!-- PNG preview modal -->
+<div id="preview-backdrop" class="preview-backdrop">
+<div class="preview-modal">
+    <div class="preview-head">
+        <div>
+            <h2 id="preview-title"></h2>
+            <p id="preview-meta"></p>
+        </div>
+        <button id="preview-close" class="preview-close" type="button">×</button>
+    </div>
+    <div class="preview-canvas-wrap"><img id="preview-img" alt=""></div>
+    <div class="preview-actions">
+        <button id="preview-cancel" class="btn-sm" type="button"></button>
+        <button id="preview-download" class="btn-sm btn-preview-download" type="button"></button>
+    </div>
 </div>
 </div>
 
@@ -317,11 +357,28 @@ const I18N = {
     sizePillNormal:  'Normal',
     sizePillLarge:   'Large ×2',
     sizePillXL:      'XL ×3',
+    btnUndo:         '↶ Undo',
+    btnRedo:         '↷ Redo',
+    versionPlaceholder: 'Versions ล่าสุด',
+    versionOption:   (i,t,n) => `v${i} · ${t} · ${n} รูป`,
+    btnRestoreVersion:'Restore',
+    btnSaveVersion:  'บันทึก Version',
+    previewTitle:    'Preview PNG',
+    previewDownload: 'Download PNG',
+    previewCancel:   'กลับไปแก้ไข',
+    previewMeta:     (theme,scale,w,h) => `${theme} · ×${scale} · ${w}×${h}px`,
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `ต้องการลบรูปทั้งหมด ${n} รูป?\n(ข้อมูลที่บันทึกไว้จะถูกลบด้วย)`,
     confirmDelTier:   n  => `ลบ tier นี้? รูป ${n} รูปจะกลับไปที่ pool`,
     toastMinOneTier:  () => 'ต้องมี tier อย่างน้อย 1 tier',
     toastNeedPhotos:  () => 'ลากรูปไปวางใน tier ก่อนนะ',
+    toastNoUndo:      () => 'ไม่มีรายการให้ Undo',
+    toastNoRedo:      () => 'ไม่มีรายการให้ Redo',
+    toastUndo:        () => 'Undo แล้ว',
+    toastRedo:        () => 'Redo แล้ว',
+    toastNoVersion:   () => 'ยังไม่มี version ที่บันทึกไว้',
+    toastVersionRestored: () => 'Restore version แล้ว',
+    toastVersionSaved: () => 'บันทึก Version แล้ว',
     toastUploadFail:  e  => `อัพโหลดล้มเหลว: ${e}`,
     toastError:       e  => `เกิดข้อผิดพลาด: ${e}`,
     toastGenFail:     e  => `สร้างภาพไม่สำเร็จ: ${e}`,
@@ -371,11 +428,28 @@ const I18N = {
     sizePillNormal:  'Normal',
     sizePillLarge:   'Large ×2',
     sizePillXL:      'XL ×3',
+    btnUndo:         '↶ Undo',
+    btnRedo:         '↷ Redo',
+    versionPlaceholder: 'Recent versions',
+    versionOption:   (i,t,n) => `v${i} · ${t} · ${n} photo(s)`,
+    btnRestoreVersion:'Restore',
+    btnSaveVersion:  'Save Version',
+    previewTitle:    'PNG Preview',
+    previewDownload: 'Download PNG',
+    previewCancel:   'Keep editing',
+    previewMeta:     (theme,scale,w,h) => `${theme} · ×${scale} · ${w}×${h}px`,
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `Delete all ${n} photo(s)?\n(Saved data will also be cleared)`,
     confirmDelTier:   n  => `Delete this tier? ${n} photo(s) will return to pool`,
     toastMinOneTier:  () => 'At least 1 tier is required',
     toastNeedPhotos:  () => 'Drag photos into a tier first',
+    toastNoUndo:      () => 'Nothing to undo',
+    toastNoRedo:      () => 'Nothing to redo',
+    toastUndo:        () => 'Undone',
+    toastRedo:        () => 'Redone',
+    toastNoVersion:   () => 'No saved versions yet',
+    toastVersionRestored: () => 'Version restored',
+    toastVersionSaved: () => 'Version saved',
     toastUploadFail:  e  => `Upload failed: ${e}`,
     toastError:       e  => `Error: ${e}`,
     toastGenFail:     e  => `Export failed: ${e}`,
@@ -425,11 +499,28 @@ const I18N = {
     sizePillNormal:  '通常',
     sizePillLarge:   '大 ×2',
     sizePillXL:      '特大 ×3',
+    btnUndo:         '↶ Undo',
+    btnRedo:         '↷ Redo',
+    versionPlaceholder: '最近のバージョン',
+    versionOption:   (i,t,n) => `v${i} · ${t} · ${n} 枚`,
+    btnRestoreVersion:'復元',
+    btnSaveVersion:  'バージョンを保存',
+    previewTitle:    'PNG プレビュー',
+    previewDownload: 'PNG を保存',
+    previewCancel:   '編集に戻る',
+    previewMeta:     (theme,scale,w,h) => `${theme} · ×${scale} · ${w}×${h}px`,
     defaultTierName:  n  => `Tier ${n}`,
     confirmClearAll:  n  => `全ての画像 ${n} 枚を削除しますか？\n(保存データも削除されます)`,
     confirmDelTier:   n  => `この Tier を削除しますか？${n} 枚の画像が pool に戻ります`,
     toastMinOneTier:  () => '少なくとも 1 つの Tier が必要です',
     toastNeedPhotos:  () => 'まず Tier に画像をドラッグしてください',
+    toastNoUndo:      () => 'Undo できる履歴がありません',
+    toastNoRedo:      () => 'Redo できる履歴がありません',
+    toastUndo:        () => 'Undo しました',
+    toastRedo:        () => 'Redo しました',
+    toastNoVersion:   () => '保存済みバージョンはありません',
+    toastVersionRestored: () => 'バージョンを復元しました',
+    toastVersionSaved: () => 'バージョンを保存しました',
     toastUploadFail:  e  => `アップロード失敗: ${e}`,
     toastError:       e  => `エラー: ${e}`,
     toastGenFail:     e  => `PNG 出力失敗: ${e}`,
@@ -455,27 +546,27 @@ const HELP = {
     { h:'👤 Oshi Profile', li:['กด <span class="help-kbd">✎</span> บนรูปเพื่อตั้งชื่อ oshi — ชื่อจะแสดงบนรูปตลอดเวลา','กด <span class="help-kbd">📷</span> เพื่ออัพเดทรูปใหม่ — <strong>ตำแหน่งใน tier ยังคงอยู่เดิม</strong>','ตั้งชื่อครั้งเดียว แล้วเปลี่ยนรูปได้เรื่อยๆ โดยไม่ต้องลากใหม่'], tip:'💡 คลิกที่ชื่อบนรูปโดยตรงก็สามารถแก้ชื่อได้เช่นกัน' },
     { h:'🖱️ จัดรูปลง Tier', li:['ลากรูปจาก pool ด้านบนลงใน tier ที่ต้องการ','ลากย้ายระหว่าง tier ได้อิสระ หรือลากกลับ pool','กด <span class="help-kbd">×</span> บนรูปเพื่อลบออก'] },
     { h:'✏️ จัดการ Tier', li:['<strong>คลิกชื่อ tier</strong> → พิมพ์ชื่อใหม่ → กด <span class="help-kbd">Enter</span> หรือคลิกออกเพื่อบันทึก','<strong>คลิกพื้นหลังสี</strong> → เลือกสีจาก 8 สี','ปุ่ม <span class="help-kbd">×</span> มุมขวาบน (เมาส์ชี้เพื่อแสดง) → ลบ tier','เมื่อลบ tier รูปในนั้นจะกลับมาที่ pool อัตโนมัติ','ปุ่ม <strong>＋ เพิ่ม tier</strong> → เพิ่ม tier ใหม่'] },
-    { h:'🎨 สร้างภาพ PNG', li:['เลือก <strong>รูปต่อแถว</strong> (3–8)','เลือก <strong>ธีม</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono','เลือก <strong>ขนาด</strong>: Normal · Large ×2 · XL ×3','กด "สร้างภาพ PNG" → ดาวน์โหลดทันที ชื่อไฟล์สะท้อน theme และ size','Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ'], tip:'💡 ธีมที่แสดงชื่อ oshi บนภาพ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
-    { h:'📦 Export / Import', li:['<strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip','<strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น'], tip:'💡 ควร Export ไว้สำรองก่อนเปลี่ยนเครื่องหรือล้างข้อมูล' },
-    { h:'💾 บันทึกอัตโนมัติ', li:['ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ','เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม','กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่'] },
+    { h:'🎨 สร้างภาพ PNG', li:['เลือก <strong>รูปต่อแถว</strong> (3–8)','เลือก <strong>ธีม</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono','เลือก <strong>ขนาด</strong>: Normal · Large ×2 · XL ×3','กด "สร้างภาพ PNG" → ดู Preview ก่อน แล้วกด Download PNG','Tier ที่ไม่มีรูปจะไม่ปรากฏในภาพ'], tip:'💡 ธีมที่แสดงชื่อ oshi บนภาพ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
+    { h:'📦 Export / Import', li:['<strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip','<strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น','Export/Import รวม Version history ที่บันทึกไว้ (สูงสุด 10 อัน) ไปด้วย'], tip:'💡 ควร Export ไว้สำรองก่อนเปลี่ยนเครื่องหรือล้างข้อมูล' },
+    { h:'💾 บันทึกอัตโนมัติ', li:['ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ','Undo / Redo ย้อนหลังได้ 10 ลำดับ','กด "บันทึก Version" เพื่อเก็บ snapshot ด้วยตนเอง — เก็บ 10 อันล่าสุดไว้ restore ได้','เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม','กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่'] },
   ]},
   en: { title: '📖 User Guide', sections: [
     { h:'📁 Upload Photos', li:['Click or drag files into the upload area','Supports JPG · PNG · GIF · WebP — max <strong>10 MB / file</strong>','Multiple files can be uploaded at once'], tip:'📌 Photos are stored on the server — use Export to keep a personal backup' },
     { h:'👤 Oshi Profile', li:['Click <span class="help-kbd">✎</span> on a photo to set the oshi\'s name — shown on the card at all times','Click <span class="help-kbd">📷</span> to update the photo — <strong>tier position is preserved</strong>','Name your oshi once, then swap photos anytime without re-dragging'], tip:'💡 You can also click the name text directly on the card to rename' },
     { h:'🖱️ Arrange Photos', li:['Drag photos from the pool above into any tier','Freely move photos between tiers or back to pool','Press <span class="help-kbd">×</span> on a photo to remove it'] },
     { h:'✏️ Manage Tiers', li:['<strong>Click tier name</strong> → type new name → press <span class="help-kbd">Enter</span> or click away','<strong>Click color background</strong> → choose from 8 colors','<span class="help-kbd">×</span> button top-right (hover to show) → delete tier','Photos in a deleted tier return to pool automatically','<strong>＋ Add tier</strong> button → create a new tier'] },
-    { h:'🎨 Export PNG', li:['Choose <strong>photos per row</strong> (3–8)','Choose a <strong>theme</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono','Choose <strong>size</strong>: Normal · Large ×2 · XL ×3','Click "Export PNG" → downloads immediately, filename reflects theme and size','Empty tiers are excluded from the image'], tip:'💡 Themes that show oshi names in the image: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
-    { h:'📦 Export / Import', li:['<strong>Export</strong> → save all photos and tier layout as a .zip file','<strong>Import</strong> → restore a .zip to recover or transfer data'], tip:'💡 Export regularly before switching devices or clearing data' },
-    { h:'💾 Auto-save', li:['Every change is saved automatically','Refresh or reopen — tiers and photo positions are fully restored','Use "Clear all" to reset and start over'] },
+    { h:'🎨 Export PNG', li:['Choose <strong>photos per row</strong> (3–8)','Choose a <strong>theme</strong>: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono','Choose <strong>size</strong>: Normal · Large ×2 · XL ×3','Click "Export PNG" → preview first, then click Download PNG','Empty tiers are excluded from the image'], tip:'💡 Themes that show oshi names in the image: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
+    { h:'📦 Export / Import', li:['<strong>Export</strong> → save all photos and tier layout as a .zip file','<strong>Import</strong> → restore a .zip to recover or transfer data','Export/Import also includes your saved Version history (up to 10 snapshots)'], tip:'💡 Export regularly before switching devices or clearing data' },
+    { h:'💾 Auto-save', li:['Every change is saved automatically','Undo / Redo keeps the last 10 steps','Click "Save Version" to store a manual snapshot — keeps the latest 10 for restore','Refresh or reopen — tiers and photo positions are fully restored','Use "Clear all" to reset and start over'] },
   ]},
   jp: { title: '📖 使い方ガイド', sections: [
     { h:'📁 画像アップロード', li:['クリックまたはドラッグでアップロードエリアにファイルを追加','JPG · PNG · GIF · WebP 対応 — 最大 <strong>10 MB / ファイル</strong>','複数ファイルを同時にアップロード可能'], tip:'📌 画像はサーバーに保存されます — Export でバックアップを保存してください' },
     { h:'👤 Oshi Profile', li:['<span class="help-kbd">✎</span> ボタンで名前を設定 — カードに常時表示されます','<span class="help-kbd">📷</span> ボタンで写真を更新 — <strong>Tier の位置はそのまま維持</strong>','一度名前をつけたら、何度でも写真だけ交換可能'], tip:'💡 カード上の名前テキストをクリックして直接編集することもできます' },
     { h:'🖱️ Tier に配置', li:['上の pool から Tier にドラッグ','Tier 間や pool へ自由に移動可能','<span class="help-kbd">×</span> ボタンで画像を削除'] },
     { h:'✏️ Tier を管理', li:['<strong>Tier 名をクリック</strong> → 新しい名前を入力 → <span class="help-kbd">Enter</span> またはクリックで確定','<strong>背景色をクリック</strong> → 8色から選択','右上の <span class="help-kbd">×</span>（ホバーで表示）→ Tier を削除','削除した Tier の画像は pool に戻ります','<strong>＋ Tier を追加</strong>ボタン → 新しい Tier を追加'] },
-    { h:'🎨 PNG 出力', li:['<strong>1行の枚数</strong>（3〜8）を選択','<strong>テーマ</strong>を選択: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono','<strong>サイズ</strong>を選択: 通常 · 大 ×2 · 特大 ×3','「PNG を出力」をクリック → すぐにダウンロード、ファイル名にテーマとサイズが反映','空の Tier は画像に含まれません'], tip:'💡 推しの名前が画像に表示されるテーマ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
-    { h:'📦 エクスポート / インポート', li:['<strong>エクスポート</strong> → 全画像と Tier 設定を .zip に保存','<strong>インポート</strong> → .zip を読み込んでデータを復元・転送'], tip:'💡 デバイス変更やデータ削除の前に定期的にエクスポートしてください' },
-    { h:'💾 自動保存', li:['全ての変更は自動的に保存されます','更新・再オープン後も Tier と画像の位置が復元されます','「全て削除」でリセットして最初からやり直せます'] },
+    { h:'🎨 PNG 出力', li:['<strong>1行の枚数</strong>（3〜8）を選択','<strong>テーマ</strong>を選択: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono','<strong>サイズ</strong>を選択: 通常 · 大 ×2 · 特大 ×3','「PNG を出力」をクリック → プレビュー後に PNG を保存','空の Tier は画像に含まれません'], tip:'💡 推しの名前が画像に表示されるテーマ: Dark UI · Gradient · Neon · Pastel · Polaroid · Mono' },
+    { h:'📦 エクスポート / インポート', li:['<strong>エクスポート</strong> → 全画像と Tier 設定を .zip に保存','<strong>インポート</strong> → .zip を読み込んでデータを復元・転送','保存済みの Version history（最大10件）もエクスポート/インポートに含まれます'], tip:'💡 デバイス変更やデータ削除の前に定期的にエクスポートしてください' },
+    { h:'💾 自動保存', li:['全ての変更は自動的に保存されます','Undo / Redo は直近 10 手順まで保持します','「バージョンを保存」ボタンで手動スナップショットを保存 — 最新 10 件まで保持','更新・再オープン後も Tier と画像の位置が復元されます','「全て削除」でリセットして最初からやり直せます'] },
   ]},
 };
 
@@ -514,6 +605,15 @@ function applyLang() {
     document.getElementById('sz1-label').textContent     = t('sizePillNormal');
     document.getElementById('sz2-label').textContent     = t('sizePillLarge');
     document.getElementById('sz3-label').textContent     = t('sizePillXL');
+    document.getElementById('btn-undo').textContent      = t('btnUndo');
+    document.getElementById('btn-redo').textContent      = t('btnRedo');
+    document.getElementById('btn-restore-version').textContent = t('btnRestoreVersion');
+    document.getElementById('btn-save-version').textContent    = t('btnSaveVersion');
+    document.getElementById('preview-title').textContent = t('previewTitle');
+    document.getElementById('preview-cancel').textContent = t('previewCancel');
+    document.getElementById('preview-download').textContent = t('previewDownload');
+    renderVersionSelect();
+    updateHistoryControls();
     const hc = document.getElementById('help-content');
     if (hc) hc.innerHTML = buildHelpContent();
     localStorage.setItem(LANG_KEY, currentLang);
@@ -529,6 +629,10 @@ function buildHelpContent() {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const STORAGE_KEY   = 'oshi-tier-v1';
+const HISTORY_KEY   = 'oshi-tier-history-v1';
+const VERSIONS_KEY  = 'oshi-tier-versions-v1';
+const HISTORY_LIMIT = 10;
+const VERSION_LIMIT = 10;
 const PALETTE       = ['#F08080','#FFB347','#FFE566','#90EE90','#87CEEB','#DDA0DD','#FFB6C1','#98D8C8'];
 const DEFAULT_TIERS = [{ id:'kami', name:'Kami', color:'#F08080' }, { id:'oshi', name:'Oshi', color:'#FFB347' }];
 const CANVAS_CFG    = { LW:140, PW:110, PH:145, G:4 };
@@ -538,6 +642,12 @@ let tiersConfig = DEFAULT_TIERS.map(x => ({ ...x }));
 let oshisMap    = new Map(); // oshi-id → { id, name, photo }
 let draggedEl   = null;
 let colorPicker = null;
+let undoStack   = [];
+let redoStack   = [];
+let isApplyingState = false;
+let previewBlob = null;
+let previewUrl  = null;
+let previewFilename = 'oshi-tier.png';
 
 // ── DOM ───────────────────────────────────────────────────────────────────────
 const pool       = document.getElementById('pool');
@@ -551,6 +661,7 @@ init();
 
 function init() {
     applyLang();
+    loadHistoryStacks();
     document.querySelectorAll('.lang-btn').forEach(btn =>
         btn.addEventListener('click', () => { currentLang = btn.dataset.lang; applyLang(); })
     );
@@ -560,21 +671,38 @@ function init() {
     document.getElementById('btn-clear-all').addEventListener('click', onClearAll);
     document.getElementById('btn-generate').addEventListener('click', onGenerate);
     document.getElementById('btn-export').addEventListener('click', onExport);
+    document.getElementById('btn-undo').addEventListener('click', () => undoState());
+    document.getElementById('btn-redo').addEventListener('click', () => redoState());
+    document.getElementById('version-select').addEventListener('change', updateHistoryControls);
+    document.getElementById('btn-restore-version').addEventListener('click', restoreSelectedVersion);
+    document.getElementById('btn-save-version').addEventListener('click', saveVersion);
     document.getElementById('import-input').addEventListener('change', e => {
         if (e.target.files[0]) onImport(e.target.files[0]);
         e.target.value = '';
     });
-    document.querySelectorAll('input[name="perrow"]').forEach(r => r.addEventListener('change', saveState));
+    document.querySelectorAll('input[name="perrow"],input[name="theme"],input[name="size"]').forEach(r => r.addEventListener('change', saveState));
     document.addEventListener('click', () => closeColorPicker());
-    if (!restoreState()) tiersConfig.forEach(renderTierRow);
+    if (!restoreState()) { tiersConfig.forEach(renderTierRow); saveState({ history:false }); }
+    updateHistoryControls();
 
     const helpBackdrop = document.getElementById('help-backdrop');
     const btnHelp = document.getElementById('btn-help');
+    const previewBackdrop = document.getElementById('preview-backdrop');
     btnHelp.addEventListener('click', e => { e.stopPropagation(); helpBackdrop.classList.add('open'); });
     btnHelp.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); helpBackdrop.classList.add('open'); } });
     document.getElementById('help-close').addEventListener('click', () => helpBackdrop.classList.remove('open'));
     helpBackdrop.addEventListener('click', e => { if(e.target===helpBackdrop) helpBackdrop.classList.remove('open'); });
-    document.addEventListener('keydown', e => { if(e.key==='Escape') helpBackdrop.classList.remove('open'); });
+    document.getElementById('preview-close').addEventListener('click', closePreview);
+    document.getElementById('preview-cancel').addEventListener('click', closePreview);
+    previewBackdrop.addEventListener('click', e => { if(e.target===previewBackdrop) closePreview(); });
+    document.getElementById('preview-download').addEventListener('click', () => { if(previewBlob) dlBlob(previewBlob, previewFilename); });
+    document.addEventListener('keydown', e => {
+        if(e.key==='Escape') { helpBackdrop.classList.remove('open'); closePreview(); }
+        if(isTypingTarget(e.target)) return;
+        const k = e.key.toLowerCase();
+        if((e.ctrlKey||e.metaKey) && k==='z' && !e.shiftKey) { e.preventDefault(); undoState(); }
+        if((e.ctrlKey||e.metaKey) && (k==='y' || (k==='z' && e.shiftKey))) { e.preventDefault(); redoState(); }
+    });
 }
 
 // ── Tier management ───────────────────────────────────────────────────────────
@@ -772,6 +900,194 @@ function getAllPhotoIds(state) {
     if(state.oshis) return [...new Set(state.oshis.map(o=>o.photo))];
     return [...new Set([...(state.pool??[]),...(state.tiers??[]).flatMap(x=>x.files??[])])];
 }
+function cloneState(state) { return JSON.parse(JSON.stringify(state)); }
+function comparableState(state) {
+    const copy = cloneState(normalizeState(state));
+    delete copy.savedAt;
+    return copy;
+}
+function sameState(a,b) { return JSON.stringify(comparableState(a)) === JSON.stringify(comparableState(b)); }
+function countStatePhotos(state) {
+    const s = normalizeState(state);
+    return (s.pool?.length??0) + (s.tiers?.reduce((n,tier)=>n+(tier.oshis?.length??0),0)??0);
+}
+function getCheckedValue(name, fallback) {
+    return document.querySelector(`input[name="${name}"]:checked`)?.value ?? fallback;
+}
+function setCheckedValue(name, value) {
+    if(value===undefined || value===null) return;
+    const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if(el) el.checked = true;
+}
+function buildCurrentState(savedAt=Date.now()) {
+    return {
+        oshis: [...oshisMap.values()].map(o => ({ ...o })),
+        tiers: tiersConfig.map(x=>({ ...x, oshis: collectOshiIds(document.getElementById('zone-'+x.id)) })),
+        pool:  collectOshiIds(pool),
+        perRow: parseInt(getCheckedValue('perrow','6'),10),
+        theme: getCheckedValue('theme','flat'),
+        scale: parseInt(getCheckedValue('size','1'),10),
+        savedAt,
+    };
+}
+function normalizeState(raw) {
+    const state = cloneState(raw ?? {});
+    if(!state.tiers&&(state.kami!==undefined||state.oshi!==undefined)) {
+        state.tiers=[];
+        if(state.kami) state.tiers.push({id:'kami',name:'Kami',color:'#F08080',files:state.kami});
+        if(state.oshi) state.tiers.push({id:'oshi',name:'Oshi',color:'#FFB347',files:state.oshi});
+    }
+    if(!state.oshis) {
+        state.oshis = [];
+        const migrateFiles = files => (files??[]).map(fn => {
+            const oshi = { id:'oshi-'+fn, name:'', photo:fn };
+            state.oshis.push(oshi);
+            return oshi.id;
+        });
+        state.tiers = (state.tiers??[]).map(x => ({ ...x, oshis: migrateFiles(x.files) }));
+        state.pool  = migrateFiles(state.pool??[]);
+    }
+    state.tiers = (state.tiers?.length ? state.tiers : DEFAULT_TIERS).map((x,i)=>({
+        id: x.id ?? 'tier-'+i,
+        name: x.name ?? t('defaultTierName', i+1),
+        color: x.color ?? PALETTE[i % PALETTE.length],
+        oshis: x.oshis ?? [],
+    }));
+    state.pool = state.pool ?? [];
+    state.perRow = parseInt(state.perRow ?? 6, 10);
+    state.theme = state.theme ?? 'flat';
+    state.scale = parseInt(state.scale ?? 1, 10);
+    state.savedAt = state.savedAt ?? Date.now();
+    return state;
+}
+function loadStoredState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)??'null'); }
+    catch { return null; }
+}
+function loadHistoryStacks() {
+    try {
+        const data = JSON.parse(localStorage.getItem(HISTORY_KEY)??'{}');
+        undoStack = Array.isArray(data.undo) ? data.undo : [];
+        redoStack = Array.isArray(data.redo) ? data.redo : [];
+    } catch { undoStack=[]; redoStack=[]; }
+}
+function saveHistoryStacks() {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify({ undo:undoStack.slice(-HISTORY_LIMIT), redo:redoStack.slice(-HISTORY_LIMIT) })); } catch {}
+}
+function getVersions() {
+    try { const v=JSON.parse(localStorage.getItem(VERSIONS_KEY)??'[]'); return Array.isArray(v) ? v : []; }
+    catch { return []; }
+}
+function setVersions(versions) {
+    try { localStorage.setItem(VERSIONS_KEY, JSON.stringify(versions.slice(0, VERSION_LIMIT))); } catch {}
+    renderVersionSelect();
+}
+function pushVersion(state) {
+    if(!countStatePhotos(state)) { renderVersionSelect(); return; }
+    const versions = getVersions().filter(v => !sameState(v, state));
+    versions.unshift(cloneState(state));
+    setVersions(versions);
+}
+function saveVersion() {
+    const state = buildCurrentState();
+    if(!countStatePhotos(state)) { showToast(t('toastNeedPhotos')); return; }
+    pushVersion(state);
+    updateHistoryControls();
+    showToast(t('toastVersionSaved'));
+}
+function renderVersionSelect() {
+    const sel = document.getElementById('version-select');
+    if(!sel) return;
+    const selected = sel.value;
+    const versions = getVersions();
+    sel.innerHTML = '';
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = t('versionPlaceholder');
+    sel.appendChild(empty);
+    versions.forEach((v,i) => {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = t('versionOption', i+1, fmtTime(v.savedAt), countStatePhotos(v));
+        sel.appendChild(opt);
+    });
+    if([...sel.options].some(o => o.value === selected)) sel.value = selected;
+}
+function updateHistoryControls() {
+    document.getElementById('btn-undo').disabled = undoStack.length === 0;
+    document.getElementById('btn-redo').disabled = redoStack.length === 0;
+    const sel = document.getElementById('version-select');
+    document.getElementById('btn-restore-version').disabled = !sel?.value;
+}
+function persistState(state) {
+    const normalized = normalizeState(state);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    updateSaveStatus(normalized.savedAt);
+}
+function applyState(rawState, opts={}) {
+    const state = normalizeState(rawState);
+    isApplyingState = true;
+    tierListEl.innerHTML = '';
+    pool.querySelectorAll('.photo-item,.empty-hint').forEach(el=>el.remove());
+    oshisMap.clear();
+    (state.oshis??[]).forEach(o => oshisMap.set(o.id, { ...o }));
+    tiersConfig = state.tiers.map(({id,name,color})=>({id,name,color}));
+    tiersConfig.forEach(tier => {
+        const {zone} = renderTierRow(tier);
+        const saved = state.tiers.find(x=>x.id===tier.id);
+        (saved?.oshis??[]).forEach(oshiId => {
+            const oshi = oshisMap.get(oshiId);
+            if(oshi) appendPhoto(zone, makeOshiEl(oshi, 'uploads/'+oshi.photo));
+        });
+    });
+    (state.pool??[]).forEach(oshiId => {
+        const oshi = oshisMap.get(oshiId);
+        if(oshi) appendPhoto(pool, makeOshiEl(oshi, 'uploads/'+oshi.photo));
+    });
+    setCheckedValue('perrow', String(state.perRow));
+    setCheckedValue('theme', state.theme);
+    setCheckedValue('size', String(state.scale));
+    syncPoolHint();
+    if(opts.persist !== false) persistState({ ...state, savedAt: Date.now() });
+    else if(state.savedAt) updateSaveStatus(state.savedAt);
+    isApplyingState = false;
+}
+function undoState() {
+    if(!undoStack.length) { showToast(t('toastNoUndo')); return; }
+    const current = buildCurrentState();
+    const prev = undoStack.pop();
+    redoStack.push(current);
+    redoStack = redoStack.slice(-HISTORY_LIMIT);
+    applyState(prev);
+    saveHistoryStacks();
+    updateHistoryControls();
+    showToast(t('toastUndo'));
+}
+function redoState() {
+    if(!redoStack.length) { showToast(t('toastNoRedo')); return; }
+    const current = buildCurrentState();
+    const next = redoStack.pop();
+    undoStack.push(current);
+    undoStack = undoStack.slice(-HISTORY_LIMIT);
+    applyState(next);
+    saveHistoryStacks();
+    updateHistoryControls();
+    showToast(t('toastRedo'));
+}
+function restoreSelectedVersion() {
+    const sel = document.getElementById('version-select');
+    const versions = getVersions();
+    const version = versions[parseInt(sel.value,10)];
+    if(!version) { showToast(t('toastNoVersion')); return; }
+    applyState(version, { persist:false });
+    saveState();
+    sel.value = '';
+    updateHistoryControls();
+    showToast(t('toastVersionRestored'));
+}
+function isTypingTarget(el) {
+    return ['INPUT','TEXTAREA','SELECT'].includes(el?.tagName) || el?.isContentEditable;
+}
 
 // ── Clear all ─────────────────────────────────────────────────────────────────
 function onClearAll() {
@@ -805,19 +1121,40 @@ async function onGenerate() {
         const blob   = await canvasToBlob(canvas);
         const fn={flat:'oshi-tier.png',dark:'oshi-tier-dark.png',polaroid:'oshi-tier-polaroid.png',gradient:'oshi-tier-gradient.png',neon:'oshi-tier-neon.png',pastel:'oshi-tier-pastel.png',mono:'oshi-tier-mono.png'};
         const sfx={1:'',2:'_2x',3:'_3x'}[scale]??'';
-        dlBlob(blob, (fn[theme]??'oshi-tier.png').replace('.png', sfx+'.png'));
+        openPreview(blob, (fn[theme]??'oshi-tier.png').replace('.png', sfx+'.png'), theme, scale, canvas.width, canvas.height);
     } catch(e) { showToast(t('toastGenFail', e.message)); }
     finally { hideOverlay(); document.getElementById('btn-generate').disabled = false; }
+}
+function openPreview(blob, filename, theme, scale, width, height) {
+    closePreview();
+    previewBlob = blob;
+    previewFilename = filename;
+    previewUrl = URL.createObjectURL(blob);
+    document.getElementById('preview-img').src = previewUrl;
+    document.getElementById('preview-meta').textContent = t('previewMeta', theme, scale, width, height);
+    document.getElementById('preview-backdrop').classList.add('open');
+}
+function closePreview() {
+    document.getElementById('preview-backdrop')?.classList.remove('open');
+    document.getElementById('preview-img')?.removeAttribute('src');
+    if(previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+    previewBlob = null;
 }
 
 // ── Export ZIP ────────────────────────────────────────────────────────────────
 async function onExport() {
-    const state = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    const ids   = state ? getAllPhotoIds(state) : [];
+    const state    = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
+    const versions = getVersions();
+    const idSet = new Set(state ? getAllPhotoIds(state) : []);
+    versions.forEach(v => getAllPhotoIds(v).forEach(id => idSet.add(id)));
+    const ids = [...idSet];
     if(!ids.length) { showToast(t('toastNoExport')); return; }
     showOverlay(t('ovExporting',0,ids.length));
     try {
-        const zip = new JSZip(); zip.file('state.json', JSON.stringify(state,null,2));
+        const zip = new JSZip();
+        zip.file('state.json', JSON.stringify(state,null,2));
+        zip.file('versions.json', JSON.stringify(versions,null,2));
         const imgs = zip.folder('images');
         for(const [i,id] of ids.entries()) {
             overlayMsg.textContent = t('ovExporting',i+1,ids.length);
@@ -837,6 +1174,10 @@ async function onImport(file) {
         const stateFile = zip.file('state.json'); if(!stateFile) throw new Error(t('errNoState'));
         let state = JSON.parse(await stateFile.async('string'));
         const imgFolder = zip.folder('images'); if(!imgFolder) throw new Error(t('errNoImages'));
+        const versionsFile = zip.file('versions.json');
+        let versions = [];
+        if(versionsFile) { try { versions = JSON.parse(await versionsFile.async('string')); } catch { versions = []; } }
+        if(!Array.isArray(versions)) versions = [];
 
         const uploads = [];
         imgFolder.forEach((path,f) => { if(!f.dir) uploads.push([path.split('/').pop(), f]); });
@@ -872,8 +1213,10 @@ async function onImport(file) {
         } else {
             state.oshis = state.oshis.map(o => ({ ...o, photo: r(o.photo) }));
         }
+        versions = versions.map(v => ({ ...v, oshis: (v.oshis??[]).map(o => ({ ...o, photo: r(o.photo) })) }));
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        localStorage.setItem(VERSIONS_KEY, JSON.stringify(versions.slice(0, VERSION_LIMIT)));
         showToast(t('toastImportOk'));
         setTimeout(()=>location.reload(), 900);
     } catch(e) { showToast(t('toastImportFail', e.message)); hideOverlay(); }
@@ -1080,66 +1423,41 @@ function showOverlay(msg){overlayMsg.textContent=msg;overlay.classList.add('acti
 function hideOverlay(){overlay.classList.remove('active');}
 
 // ── Persistence ───────────────────────────────────────────────────────────────
-function saveState() {
-    const perRowEl = document.querySelector('input[name="perrow"]:checked');
-    const state = {
-        oshis: [...oshisMap.values()],
-        tiers: tiersConfig.map(x=>({ ...x, oshis: collectOshiIds(document.getElementById('zone-'+x.id)) })),
-        pool:  collectOshiIds(pool),
-        perRow: parseInt(perRowEl?.value??'6',10),
-        savedAt: Date.now(),
-    };
-    try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); updateSaveStatus(state.savedAt); } catch {}
+function saveState(opts={}) {
+    if(isApplyingState) return;
+    const options = { history:true, ...opts };
+    const prev = loadStoredState();
+    const state = buildCurrentState();
+    if(prev && sameState(prev, state)) { updateSaveStatus(prev.savedAt); updateHistoryControls(); return; }
+    if(options.history && prev) {
+        undoStack.push(normalizeState(prev));
+        undoStack = undoStack.slice(-HISTORY_LIMIT);
+        redoStack = [];
+        saveHistoryStacks();
+    }
+    try {
+        persistState(state);
+        updateHistoryControls();
+    } catch {}
 }
-function clearSavedState() { try{localStorage.removeItem(STORAGE_KEY);}catch{} saveStatus.textContent=''; saveStatus.classList.remove('visible'); }
+function clearSavedState() {
+    try{
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(HISTORY_KEY);
+        localStorage.removeItem(VERSIONS_KEY);
+    }catch{}
+    undoStack=[]; redoStack=[]; renderVersionSelect(); updateHistoryControls();
+    saveStatus.textContent=''; saveStatus.classList.remove('visible');
+}
 
 function restoreState() {
-    let state; try{state=JSON.parse(localStorage.getItem(STORAGE_KEY)??'null');}catch{return false;}
+    const state = loadStoredState();
     if(!state) return false;
-
-    // Very old schema (kami/oshi keys)
-    if(!state.tiers&&(state.kami!==undefined||state.oshi!==undefined)) {
-        state.tiers=[];
-        if(state.kami) state.tiers.push({id:'kami',name:'Kami',color:'#F08080',files:state.kami});
-        if(state.oshi) state.tiers.push({id:'oshi',name:'Oshi',color:'#FFB347',files:state.oshi});
-    }
-
-    // Migrate pre-oshi schema (tiers had files[], no oshis key)
-    if (!state.oshis) {
-        state.oshis = [];
-        const migrateFiles = files => (files??[]).map(fn => {
-            const oshi = { id:'oshi-'+fn, name:'', photo:fn };
-            state.oshis.push(oshi);
-            return oshi.id;
-        });
-        state.tiers = (state.tiers??[]).map(x => ({ ...x, oshis: migrateFiles(x.files) }));
-        state.pool  = migrateFiles(state.pool??[]);
-    }
-
-    if(!state.tiers?.length&&!state.pool?.length) return false;
-
-    // Build oshisMap
-    (state.oshis??[]).forEach(o => oshisMap.set(o.id, { ...o }));
-
-    if(state.tiers?.length) {
-        tiersConfig = state.tiers.map(({id,name,color})=>({id,name,color}));
-        tiersConfig.forEach(tier => {
-            const {zone} = renderTierRow(tier);
-            const saved  = state.tiers.find(x=>x.id===tier.id);
-            (saved?.oshis??[]).forEach(oshiId => {
-                const oshi = oshisMap.get(oshiId);
-                if(oshi) appendPhoto(zone, makeOshiEl(oshi, 'uploads/'+oshi.photo));
-            });
-        });
-    }
-    (state.pool??[]).forEach(oshiId => {
-        const oshi = oshisMap.get(oshiId);
-        if(oshi) appendPhoto(pool, makeOshiEl(oshi, 'uploads/'+oshi.photo));
-    });
-    if(state.perRow){const r=document.querySelector(`input[name="perrow"][value="${state.perRow}"]`);if(r)r.checked=true;}
-    if(state.savedAt) updateSaveStatus(state.savedAt);
-    const total=(state.pool?.length??0)+(state.tiers?.reduce((s,x)=>s+(x.oshis?.length??0),0)??0);
-    if(total>0) showToast(t('toastRestored', total, fmtTime(state.savedAt)));
+    const normalized = normalizeState(state);
+    if(!countStatePhotos(normalized) && !normalized.tiers?.length) return false;
+    applyState(normalized, { persist:false });
+    const total=countStatePhotos(normalized);
+    if(total>0) showToast(t('toastRestored', total, fmtTime(normalized.savedAt)));
     return true;
 }
 function updateSaveStatus(ts){saveStatus.textContent=t('savedAt',fmtTime(ts));saveStatus.classList.add('visible');}

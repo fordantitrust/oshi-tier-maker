@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.7.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
+**Version 0.8.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -433,6 +433,13 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 ---
 
 ## Changelog
+
+### 0.8.0rc1 — 2026-07-01
+- **Undo / Redo** — ย้อนกลับ/ย้อนไปข้างหน้าได้ 10 ลำดับล่าสุด ปุ่ม ↶ ↷ ข้าง save-status, คีย์ลัด `Ctrl/Cmd+Z` และ `Ctrl/Cmd+Shift+Z` (หรือ `Ctrl/Cmd+Y`)
+- **Version history** — กด "บันทึก Version" เพื่อเก็บ snapshot ปัจจุบันด้วยตนเอง (เก็บล่าสุด 10 อันใน `localStorage`) เลือกจาก dropdown แล้วกด Restore เพื่อย้อนกลับไปยัง state นั้น
+- Version history ถูกรวมเข้าไปใน Export/Import ZIP ด้วย (`versions.json`) — ฝั่ง PHP จะ remap `oshi.photo` ของทุก version ให้ตรงกับ filename ใหม่หลัง re-upload อัตโนมัติ
+- **PNG Preview modal** — กด "สร้างภาพ PNG" แล้วขึ้น preview ก่อน ตรวจสอบภาพแล้วค่อยกด Download PNG หรือกลับไปแก้ไข
+- รองรับ TH/EN/JP ครบทั้ง 3 feature
 
 ### 0.7.0rc1 — 2026-06-25
 - **PNG Size selector** — เลือกขนาด output ก่อน export: Normal (×1) · Large (×2) · XL (×3)
