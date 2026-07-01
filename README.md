@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.8.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
+**Version 0.9.0rc1** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -35,15 +35,18 @@
 
 ### 🗂️ Tier List
 - อัพโหลดรูปได้หลายไฟล์พร้อมกัน (คลิกหรือ drag & drop) — JPG · PNG · GIF · WebP
-- ลากรูปจัด tier ได้อิสระ ย้ายข้าม tier หรือลากกลับ pool ได้
+- ลากรูปจัด tier ได้อิสระ ย้ายข้าม tier หรือลากกลับ pool ได้ — รองรับลากด้วยนิ้วบนมือถือ/แท็บเล็ตด้วย
 - **Tier แบบกำหนดเอง** — เพิ่ม / ลบ tier ได้ไม่จำกัด
 - **แก้ไขชื่อ tier** — คลิกที่ชื่อเพื่อแก้ inline กด Enter หรือคลิกออกเพื่อบันทึก
-- **เปลี่ยนสี tier** — คลิกพื้นหลัง label เลือกได้ 8 สี preset
+- **เปลี่ยนสี tier** — คลิกพื้นหลัง label เลือกได้ 8 สี preset หรือกำหนดสีเองผ่าน color picker
+- **สลับลำดับ tier** — ลากไอคอน ⠿ เพื่อจัดลำดับ tier ใหม่
+- **ล็อค tier / oshi** — กันลากรูปเข้า-ออกหรือกันสลับลำดับโดยไม่ตั้งใจ (แก้ชื่อ/สี/ลบยังทำได้ตามปกติ)
 
 ### 🎨 Export PNG
 - เลือกจำนวน **รูปต่อแถว** (3–8)
-- เลือก **ธีม** 7 แบบ: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
+- เลือก **ธีม** 8 แบบ: Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom (กำหนดสีพื้นหลังเอง)
 - เลือก **ขนาด**: Normal (×1) · Large (×2) · XL (×3)
+- **ควบคุมการแสดงชื่อ** — ติ๊ก/ปลดติ๊กแยกกันได้ระหว่าง **ชื่อ Tier** และ **ชื่อ Oshi** ก่อน export
 - สร้างภาพด้วย Canvas API ใน browser — ไม่ต้องพึ่ง server
 - ชื่อไฟล์สะท้อน theme และ size: `oshi-tier-dark_2x.png`
 
@@ -252,7 +255,7 @@ oshi-tier/               ← project root
    - ปุ่ม × มุมบนขวา (แสดงเมื่อ hover) → ลบ tier (รูปกลับ pool อัตโนมัติ)
    - ปุ่ม **＋ เพิ่ม tier** → สร้าง tier ใหม่
 5. **เลือกรูปต่อแถว** — เลือก 3–8
-6. **เลือกธีม** — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono
+6. **เลือกธีม** — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom
 7. **เลือกขนาด** — Normal · Large ×2 · XL ×3
 8. กด **สร้างภาพ PNG** → ดาวน์โหลดทันที
 
@@ -361,7 +364,7 @@ oshi-tier-export.zip
 | Gap | 4 px |
 | Canvas width (×1) | `140 + perRow × 110 + (perRow+1) × 4` px |
 | Scale | ×1 (Normal) · ×2 (Large) · ×3 (XL) — ผ่าน `ctx.scale()` |
-| Themes | 7 themes — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono |
+| Themes | 8 themes — Flat · Dark UI · Polaroid · Gradient · Neon · Pastel · Mono · Custom |
 | Oshi name in PNG | แสดงใน Dark UI · Gradient · Neon · Pastel · Polaroid · Mono (ถ้าตั้งชื่อไว้) |
 | Tier color | กำหนดจาก UI — 8 สีให้เลือก |
 | Font | System font stack (Segoe UI / Noto Sans Thai / Hiragino Sans / Arial) |
@@ -429,10 +432,20 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 | **Neon** | cyber/futuristic | `#000` pitch black | rounded card + glowing border สี tier |
 | **Pastel** | soft/airy | `#f4f4f4` light | rounded card + soft shadow |
 | **Mono** | editorial/zine | `#1a1a1a` dark | รูป grayscale + colored accent dot |
+| **Custom** | กำหนดเอง | label = tier color, พื้นที่รูป = สีที่ผู้ใช้เลือกเอง | รูปชิดขอบ |
 
 ---
 
 ## Changelog
+
+### 0.9.0rc1 — 2026-07-01
+- **Custom Background theme** — theme ที่ 8 นอกเหนือจาก 7 theme เดิม เลือกสีพื้นหลังของภาพ export ได้อิสระผ่าน color picker พร้อมสี preset 8 สีให้กดเลือกเร็วๆ
+- **Tier color picker กำหนดสีเองได้** — นอกจาก 8 สี preset เดิม เพิ่ม color picker ให้กำหนดสี tier เองได้อิสระ
+- **Tier drag-reorder** — ลากไอคอน ⠿ ที่มุมซ้ายบนของแต่ละ tier (แสดงเมื่อ hover) เพื่อสลับลำดับ tier
+- **Lock tier / oshi** — ปุ่ม 🔒/🔓 บน tier และบนรูปแต่ละใบ ล็อคแล้วกันลากเข้า-ออก/สลับลำดับ (rename/เปลี่ยนสี/ลบยังทำได้ตามปกติสำหรับ tier ที่ล็อค)
+- **Touch drag-and-drop** — ลากรูปและลากสลับลำดับ tier ด้วยนิ้วบนมือถือ/แท็บเล็ตได้เหมือนเมาส์
+- **ควบคุมการแสดงชื่อตอน export** — checkbox แยกกัน 2 อันสำหรับ "แสดงชื่อ Tier" และ "แสดงชื่อ Oshi" ปิดได้อิสระต่อกัน
+- รองรับ TH/EN/JP ครบทุก feature
 
 ### 0.8.0rc1 — 2026-07-01
 - **Undo / Redo** — ย้อนกลับ/ย้อนไปข้างหน้าได้ 10 ลำดับล่าสุด ปุ่ม ↶ ↷ ข้าง save-status, คีย์ลัด `Ctrl/Cmd+Z` และ `Ctrl/Cmd+Shift+Z` (หรือ `Ctrl/Cmd+Y`)
