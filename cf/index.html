@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oshi Tier Maker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d0d1a">
+<link rel="icon" href="icons/favicon-48.png" type="image/png" sizes="48x48">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Oshi Tier">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { background:#0d0d1a; color:#dde; font-family:'Segoe UI','Noto Sans Thai','Hiragino Sans',Tahoma,sans-serif; min-height:100vh; padding-bottom:40px; }
@@ -169,6 +177,12 @@ header p { color:#666; font-size:14px; margin-bottom:12px; }
 /* ── Toast ── */
 #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e1e38; border:1px solid #ff8c8c; color:#ff8c8c; padding:10px 22px; border-radius:8px; font-size:14px; transition:transform .25s; z-index:1000; white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── Update bar (new Service Worker version waiting) ── */
+#update-bar { position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-120px); display:flex; align-items:center; gap:12px; max-width:calc(100% - 32px); background:#1e1e38; border:1px solid #ffb347; color:#ffb347; padding:8px 10px 8px 18px; border-radius:8px; font-size:14px; transition:transform .25s; z-index:1001; }
+#update-bar.show { transform:translateX(-50%) translateY(0); }
+#update-bar button { background:#ffb347; border:none; color:#0d0d1a; font-weight:600; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:13px; white-space:nowrap; }
+#update-bar button:hover { background:#ffc670; }
 
 /* ── Footer ── */
 footer { text-align:center; padding:24px 16px 16px; }
@@ -356,7 +370,8 @@ footer a:hover { color:#ffb347; }
 
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
-<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.10.0 · GitHub ↗</a></footer>
+<div id="update-bar" role="status"><span id="update-bar-text"></span><button id="update-bar-btn" type="button"></button></div>
+<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.11.0 · GitHub ↗</a></footer>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">
@@ -384,7 +399,7 @@ footer a:hover { color:#ffb347; }
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
 <script>
 (function () {
 'use strict';
@@ -450,6 +465,10 @@ const I18N = {
     previewTitle:    'Preview PNG',
     previewDownload: 'Download PNG',
     previewCancel:   'กลับไปแก้ไข',
+    updateAvailable: '✨ มีเวอร์ชันใหม่พร้อมใช้งาน',
+    updateReload:    'รีโหลด',
+    toastOffline:    '📴 ออฟไลน์ — ยังใช้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง',
+    toastOnline:     '🌐 กลับมาออนไลน์แล้ว',
     previewMeta:     (theme,sizeLabel,w,h) => `${theme} · ${sizeLabel} · ${w}×${h}px`,
     quotaChecking:   'กำลังตรวจสอบ...',
     quotaOf:         (u,m) => `${u} / ${m} MB`,
@@ -541,6 +560,10 @@ const I18N = {
     previewTitle:    'PNG Preview',
     previewDownload: 'Download PNG',
     previewCancel:   'Keep editing',
+    updateAvailable: '✨ A new version is available',
+    updateReload:    'Reload',
+    toastOffline:    '📴 Offline — everything still works, your data is on this device',
+    toastOnline:     '🌐 Back online',
     previewMeta:     (theme,sizeLabel,w,h) => `${theme} · ${sizeLabel} · ${w}×${h}px`,
     quotaChecking:   'Checking...',
     quotaOf:         (u,m) => `${u} / ${m} MB`,
@@ -632,6 +655,10 @@ const I18N = {
     previewTitle:    'PNG プレビュー',
     previewDownload: 'PNG を保存',
     previewCancel:   '編集に戻る',
+    updateAvailable: '✨ 新しいバージョンがあります',
+    updateReload:    '再読み込み',
+    toastOffline:    '📴 オフライン — そのまま使えます（データは端末内に保存）',
+    toastOnline:     '🌐 オンラインに戻りました',
     previewMeta:     (theme,sizeLabel,w,h) => `${theme} · ${sizeLabel} · ${w}×${h}px`,
     quotaChecking:   '確認中...',
     quotaOf:         (u,m) => `${u} / ${m} MB`,
@@ -679,6 +706,7 @@ const HELP = {
     { h:'📦 Export / Import', li:['<strong>Export</strong> → บันทึกรูปทั้งหมดและการจัด tier เป็นไฟล์ .zip','<strong>Import</strong> → โหลดไฟล์ .zip เพื่อกู้คืนหรือย้ายข้อมูลจากเครื่องอื่น','Export/Import รวม Version history ที่บันทึกไว้ (สูงสุด 10 อัน) ไปด้วย'], tip:'💡 ควร Export ไว้ก่อน — ถ้าล้างข้อมูลเบราว์เซอร์หรือใช้โหมด Private รูปจะหายทั้งหมด' },
     { h:'🗄️ พื้นที่จัดเก็บ', li:['รูปทั้งหมดเก็บไว้ในเบราว์เซอร์ — ดูพื้นที่ที่ใช้ได้จาก progress bar ด้านบน','จำกัดพื้นที่รวม <strong>50 MB</strong> — จะแจ้งเตือนเมื่อใกล้เต็ม'] },
     { h:'💾 บันทึกอัตโนมัติ', li:['ทุกการเปลี่ยนแปลงจะถูกบันทึกโดยอัตโนมัติ','Undo / Redo ย้อนหลังได้ 10 ลำดับ','กด "บันทึก Version" เพื่อเก็บ snapshot ด้วยตนเอง — เก็บ 10 อันล่าสุดไว้ restore ได้','เปิดหน้าใหม่หรือ refresh — tier และตำแหน่งรูปกลับมาเหมือนเดิม','กด "ล้างทั้งหมด" เพื่อล้างข้อมูลและเริ่มต้นใหม่'] },
+    { h:'📲 ใช้งานออฟไลน์ / ติดตั้งแอป', li:['เปิดเว็บครั้งแรกตอนออนไลน์ — ครั้งต่อไปเปิดใช้ได้แม้<strong>ไม่มีอินเทอร์เน็ต</strong> (อัพโหลด · จัด tier · สร้าง PNG · Export/Import ได้ครบ)','ติดตั้งเป็นแอปได้: มือถือกด <strong>Add to Home Screen / เพิ่มไปยังหน้าจอหลัก</strong> · คอมพิวเตอร์กดไอคอน <strong>Install</strong> ที่แถบ URL','เมื่อมีเวอร์ชันใหม่ จะมีแถบ <strong>"มีเวอร์ชันใหม่"</strong> ด้านบน — กด <span class="help-kbd">รีโหลด</span> เมื่อพร้อม ข้อมูลไม่หาย'], tip:'💡 ข้อมูลยังเก็บอยู่ในเบราว์เซอร์นี้เท่านั้น — ควร Export .zip สำรองไว้เป็นระยะ' },
   ]},
   en: { title:'📖 User Guide', sections:[
     { h:'📁 Upload Photos', li:['Click or drag files into the upload area','Supports JPG · PNG · GIF · WebP','Multiple files can be uploaded at once'], tip:'📌 Photos are stored in your browser only — nothing is sent to any server' },
@@ -689,6 +717,7 @@ const HELP = {
     { h:'📦 Export / Import', li:['<strong>Export</strong> → save all photos and tier layout as a .zip file','<strong>Import</strong> → restore a .zip to recover or transfer data','Export/Import also includes your saved Version history (up to 10 snapshots)'], tip:'💡 Export before clearing browser data or using Private mode — photos will be permanently lost otherwise' },
     { h:'🗄️ Storage', li:['Photos are stored in your browser — check usage via the progress bar above','Total limit: <strong>50 MB</strong> — a warning appears when nearing capacity'] },
     { h:'💾 Auto-save', li:['Every change is saved automatically','Undo / Redo keeps the last 10 steps','Click "Save Version" to store a manual snapshot — keeps the latest 10 for restore','Refresh or reopen — tiers and photo positions are fully restored','Use "Clear all" to reset and start over'] },
+    { h:'📲 Offline / Install as App', li:['Open the site once while online — after that it works even <strong>without internet</strong> (upload · arrange · export PNG · Export/Import all work)','Install as an app: on mobile tap <strong>Add to Home Screen</strong> · on desktop click the <strong>Install</strong> icon in the address bar','When a new version is ready, a <strong>"new version"</strong> bar appears at the top — press <span class="help-kbd">Reload</span> whenever you\'re ready, your data is kept'], tip:'💡 Data still lives only in this browser — export a .zip backup from time to time' },
   ]},
   jp: { title:'📖 使い方ガイド', sections:[
     { h:'📁 画像アップロード', li:['クリックまたはドラッグでアップロードエリアにファイルを追加','JPG · PNG · GIF · WebP 対応','複数ファイルを同時にアップロード可能'], tip:'📌 画像はブラウザにのみ保存されます — 外部サーバーへの送信は一切ありません' },
@@ -699,6 +728,7 @@ const HELP = {
     { h:'📦 エクスポート / インポート', li:['<strong>エクスポート</strong> → 全画像と Tier 設定を .zip に保存','<strong>インポート</strong> → .zip を読み込んでデータを復元・転送','保存済みの Version history（最大10件）もエクスポート/インポートに含まれます'], tip:'💡 ブラウザデータの削除やプライベートモード使用前に必ずエクスポートしてください' },
     { h:'🗄️ ストレージ', li:['画像はブラウザに保存されます — 上部のプログレスバーで使用量を確認','上限: <strong>50 MB</strong> — 容量が不足する場合は警告が表示されます'] },
     { h:'💾 自動保存', li:['全ての変更は自動的に保存されます','Undo / Redo は直近 10 手順まで保持します','「バージョンを保存」ボタンで手動スナップショットを保存 — 最新 10 件まで保持','更新・再オープン後も Tier と画像の位置が復元されます','「全て削除」でリセットして最初からやり直せます'] },
+    { h:'📲 オフライン / アプリとしてインストール', li:['オンライン時に一度開けば、以降は<strong>インターネットなし</strong>でも使えます（アップロード · 配置 · PNG 出力 · エクスポート/インポート すべて可能）','アプリとしてインストール: スマホは<strong>ホーム画面に追加</strong> · PC はアドレスバーの<strong>インストール</strong>アイコン','新しいバージョンがあると上部に<strong>「新しいバージョン」</strong>バーが表示されます — 準備ができたら <span class="help-kbd">再読み込み</span> を押してください（データは消えません）'], tip:'💡 データはこのブラウザ内にのみ保存されます — 定期的に .zip でバックアップしてください' },
   ]},
 };
 
@@ -757,6 +787,8 @@ function applyLang() {
     document.getElementById('preview-title').textContent = t('previewTitle');
     document.getElementById('preview-cancel').textContent = t('previewCancel');
     document.getElementById('preview-download').textContent = t('previewDownload');
+    document.getElementById('update-bar-text').textContent = t('updateAvailable');
+    document.getElementById('update-bar-btn').textContent  = t('updateReload');
     renderVersionSelect();
     updateHistoryControls();
     const hc = document.getElementById('help-content');
@@ -922,6 +954,40 @@ async function init() {
         const k = e.key.toLowerCase();
         if((e.ctrlKey||e.metaKey) && k==='z' && !e.shiftKey) { e.preventDefault(); undoState(); }
         if((e.ctrlKey||e.metaKey) && (k==='y' || (k==='z' && e.shiftKey))) { e.preventDefault(); redoState(); }
+    });
+
+    window.addEventListener('offline', () => showToast(t('toastOffline')));
+    window.addEventListener('online',  () => showToast(t('toastOnline')));
+    navigator.storage?.persist?.().catch(() => {});
+    setupServiceWorker();
+}
+
+// ── Offline (Service Worker) ──────────────────────────────────────────────────
+function setupServiceWorker() {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+    const bar = document.getElementById('update-bar');
+    let reloading = false;
+
+    navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(reg => {
+        const offerUpdate = () => { if (reg.waiting && navigator.serviceWorker.controller) bar.classList.add('show'); };
+        offerUpdate();
+        reg.addEventListener('updatefound', () => {
+            const sw = reg.installing;
+            sw?.addEventListener('statechange', () => { if (sw.state === 'installed') offerUpdate(); });
+        });
+        document.getElementById('update-bar-btn').addEventListener('click', () => {
+            if (reg.waiting) reg.waiting.postMessage({ type:'SKIP_WAITING' });
+            else location.reload();
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') reg.update().catch(() => {});
+        });
+    }).catch(err => console.warn('Service worker registration failed:', err));
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading || !bar.classList.contains('show')) return;
+        reloading = true;
+        location.reload();
     });
 }
 

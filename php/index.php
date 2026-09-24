@@ -342,7 +342,7 @@ footer a:hover { color:#ffb347; }
 
 <div id="overlay"><div class="spinner"></div><p id="overlay-msg"></p></div>
 <div id="toast"></div>
-<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.10.0 · GitHub ↗</a></footer>
+<footer><a href="https://github.com/fordantitrust/oshi-tier-maker" target="_blank" rel="noopener">v0.11.0 · GitHub ↗</a></footer>
 
 <!-- Help modal -->
 <div id="help-backdrop" class="help-backdrop">

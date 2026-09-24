@@ -1,6 +1,6 @@
 # Oshi Tier Maker
 
-**Version 0.10.0** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
+**Version 0.11.0** &nbsp;·&nbsp; [GitHub](https://github.com/fordantitrust/oshi-tier-maker)
 
 สร้าง tier list รูปภาพสไตล์ idol fandom ออกมาเป็นไฟล์ PNG — ออกแบบมาโดยเน้น **ความเป็นส่วนตัวของผู้ใช้เป็นหลัก**
 
@@ -23,6 +23,7 @@
 | **Server required** | PHP 8.2 | ไม่ต้องมี server |
 | **Cross-device** | ✅ ผ่าน server หรือ ZIP | ZIP เท่านั้น |
 | **Storage limit** | Disk space ของ server | ~50 MB ต่อ browser |
+| **Offline / ติดตั้งเป็นแอป** | ❌ | ✅ Service Worker + PWA |
 
 ---
 
@@ -60,6 +61,12 @@
 ### 🌐 อื่นๆ
 - **3 ภาษา** — TH / EN / JP สลับได้ทันที บันทึก preference ข้าม session
 - **คู่มือการใช้งาน in-app** — help modal อธิบายทุก feature ครบทุกภาษา
+
+### 📲 Offline / PWA (Static version เท่านั้น)
+- **ใช้งานได้แม้ไม่มีอินเทอร์เน็ต** — เปิดครั้งแรกตอนออนไลน์ แล้ว Service Worker จะ cache ตัวแอปไว้ในเครื่อง ครั้งต่อไปอัพโหลด/จัด tier/สร้าง PNG/Export-Import ZIP ได้ครบแบบออฟไลน์
+- **ติดตั้งเป็นแอป** — Add to Home Screen บนมือถือ หรือปุ่ม Install บนเดสก์ท็อป (Web App Manifest + ไอคอน)
+- **แถบแจ้งเวอร์ชันใหม่** — เมื่อ deploy เวอร์ชันใหม่ จะขึ้นแถบ "มีเวอร์ชันใหม่ · รีโหลด" ให้ผู้ใช้กดเองเมื่อพร้อม
+- ขอ **persistent storage** จากเบราว์เซอร์ ลดโอกาสที่รูปใน IndexedDB ถูกลบอัตโนมัติ
 
 ---
 
@@ -157,7 +164,9 @@ php -S localhost:8080
 
 ### Static Version (CF)
 
-ไฟล์เดียว (`cf/index.html`) วางได้บน static hosting ใดก็ได้
+อัพโหลด **ทั้งโฟลเดอร์ `cf/`** (`index.html`, `sw.js`, `manifest.webmanifest`, `vendor/`, `icons/`, `_headers`) ขึ้น static hosting ใดก็ได้
+
+> Offline mode (Service Worker) ทำงานเฉพาะเมื่อเสิร์ฟผ่าน **HTTPS** หรือ `localhost` — `sw.js` และ `index.html` ควรถูกเสิร์ฟด้วย `Cache-Control: no-cache` เพื่อให้ผู้ใช้ได้รับเวอร์ชันใหม่ทันที (Cloudflare Pages อ่านจาก `cf/_headers` ให้อัตโนมัติ, host อื่นให้ตั้งค่าเทียบเท่า)
 
 #### Cloudflare Pages
 ```bash
@@ -191,7 +200,7 @@ vercel cf/
 
 #### VPS / Shared Hosting
 ```bash
-scp cf/index.html user@server:/var/www/html/oshi-tier/
+scp -r cf/* user@server:/var/www/html/oshi-tier/
 # หรืออัพโหลดผ่าน FTP ไปที่ public_html/oshi-tier/
 ```
 
@@ -225,6 +234,8 @@ npx serve cf/                  # Node.js
 - [ ] ลากรูปลง tier และสร้างภาพ PNG ได้ (ลอง theme/size ต่างกัน)
 - [ ] Export ZIP และ Import กลับมาครบ
 - [ ] รีเฟรชหน้า — รูปโหลดกลับมาจาก browser storage รวมชื่อ oshi
+- [ ] DevTools → Application → Service Workers แสดง activated และ Cache Storage มี `oshi-tier-<version>`
+- [ ] ติ๊ก Offline ใน DevTools แล้วรีโหลด — แอปเปิดได้และใช้งานได้ครบ (รวม Export/Import ZIP)
 
 ---
 
@@ -238,7 +249,12 @@ oshi-tier/               ← project root
 │   └── uploads/
 │       └── .htaccess    กัน PHP execution และ directory listing
 ├── cf/                  ← Static version (ไม่ต้องมี server)
-│   └── index.html       หน้าเดียว ครบทุกอย่าง
+│   ├── index.html       หน้าเดียว ครบทุกอย่าง
+│   ├── sw.js            Service Worker (offline cache)
+│   ├── manifest.webmanifest  PWA manifest
+│   ├── _headers         Cloudflare Pages cache headers
+│   ├── vendor/jszip.min.js   JSZip (เก็บในเครื่องเพื่อใช้ offline)
+│   └── icons/           ไอคอนแอป (PNG สร้างจาก icon.png ต้นฉบับ)
 ├── CLAUDE.md
 └── README.md
 ```
@@ -419,6 +435,11 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 **Export ZIP ว่างเปล่า / ไม่มีรูป**
 - ตรวจสอบว่ารูปถูก restore จาก browser storage แล้ว (ไม่ใช่แค่แสดง broken icon)
 
+**ยังเห็นเวอร์ชันเก่าหลัง deploy**
+- รอแถบ "มีเวอร์ชันใหม่" แล้วกดรีโหลด (เช็กอัปเดตทุกครั้งที่กลับมาที่แท็บ)
+- ตรวจว่า host เสิร์ฟ `sw.js` ด้วย `Cache-Control: no-cache`
+- ทางลัดตอนพัฒนา: DevTools → Application → Service Workers → Unregister แล้วรีโหลด
+
 ---
 
 ## Export Themes
@@ -439,6 +460,16 @@ mkdir -p php/uploads/   # ถ้า folder ไม่มี
 ---
 
 ## Changelog
+
+### 0.11.0 — 2026-09-24
+- **Offline App (PWA) — Static version** — Service Worker cache ตัวแอปไว้ในเครื่อง เปิดใช้ได้แม้ไม่มีอินเทอร์เน็ต
+- HTML ใช้ network-first (timeout 3 วินาที → fallback cache), ไฟล์อื่นใช้ cache-first, cache ตั้งชื่อตามเวอร์ชัน (`oshi-tier-0.11.0`) และลบ cache เก่าอัตโนมัติ
+- **แถบแจ้งเวอร์ชันใหม่** — ผู้ใช้กด "รีโหลด" เองเมื่อพร้อม ไม่ขัดจังหวะระหว่างใช้งาน
+- **ติดตั้งเป็นแอปได้** — Web App Manifest + ไอคอน (รวม maskable และ apple-touch-icon)
+- JSZip เก็บในเครื่อง (`cf/vendor/`) แทน CDN — Export/Import ZIP ใช้ได้แม้ออฟไลน์
+- ขอ persistent storage + แจ้ง toast เมื่อออฟไลน์/กลับมาออนไลน์
+- `cf/_headers` สำหรับ Cloudflare Pages (`no-cache` ให้ `sw.js` และ HTML)
+- รองรับ TH/EN/JP ครบ + section ใหม่ในคู่มือ
 
 ### 0.10.0 — 2026-07-02
 - **Preset ขนาด canvas ตาม platform** — เลือก IG Post 1:1 · IG Story 9:16 · FB Post · X Post 16:9 เพื่อ export เป็นขนาดตายตัวสำหรับแพลตฟอร์มนั้นๆ
