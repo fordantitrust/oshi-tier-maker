@@ -2,7 +2,7 @@
 // Bump VERSION together with the app version (see CLAUDE.md Version Bump Checklist)
 'use strict';
 
-const VERSION = '0.11.0';
+const VERSION = '0.12.0';
 const CACHE_PREFIX = 'oshi-tier-';
 const CACHE = CACHE_PREFIX + VERSION;
 const NAV_TIMEOUT_MS = 3000;
